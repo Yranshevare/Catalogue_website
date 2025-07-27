@@ -121,7 +121,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsRes = await axios.get("/api/stats"); // Replace with actual backend URL if needed
+        const statsRes = await axios.get("/api/stats"); 
         const productsRes = await axios.get("/api/recent-products");
         setStats(statsRes.data);
         setRecentProducts(productsRes.data);
