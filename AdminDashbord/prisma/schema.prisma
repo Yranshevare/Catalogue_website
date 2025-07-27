@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model Category{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  categoryName String @unique
+  product Product[]
+  description String
+}
+
+
+model Product{
+  id  String   @id @default(auto()) @map("_id") @db.ObjectId
+  productName String
+  images String[]
+  primaryImage String
+  cat Category? @relation(fields: [category], references: [categoryName])
+  category String?
+  description String
+  prise String
+  material String?
+  size String?
+  weight String?
+  discount String?
+  otherSpecification String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  notification Notification? @relation(fields: [Notification], references: [id])
+  Notification String? @db.ObjectId
+}
+
+enum Status {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Notification{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  quantity Int  
+  status Status @default(PENDING)
+  fromName String
+  fromPhone String
+  fromAddress String 
+  product Product[] 
+}
+
+
