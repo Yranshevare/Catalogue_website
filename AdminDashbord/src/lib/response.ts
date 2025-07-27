@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 type Response = {
     status: number;
     message?: string;
-    error?: any;
-    data?: any;
+    error?: string;
+    data?: object;
 };
 
 

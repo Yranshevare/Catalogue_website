@@ -31,6 +31,14 @@ export async function GET(req:NextRequest){
         }
 
 
+        if(req.cookies.get("refreshToken")){    // for already logged in user
+            return response({
+                message:"user is already logged in",
+                status:200
+            })
+        }
+
+
         const refreshToken = generateRefreshToken({email})      // creating the refresh token   
 
         const res =  response({
@@ -38,7 +46,7 @@ export async function GET(req:NextRequest){
             status:200
         })
 
-        res.cookies.set("refreshToken",refreshToken,{httpOnly:true,secure:true}) // setting up the refresh token 
+        res.cookies.set("refreshToken",refreshToken,{httpOnly:true,secure:true}) // setting up the cookies to create the session
 
         return res
         
