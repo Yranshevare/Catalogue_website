@@ -26,7 +26,7 @@ model Product{
   cat Category? @relation(fields: [category], references: [categoryName])
   category String?
   description String
-  prise String
+  price String
   material String?
   size String?
   weight String?
