@@ -19,6 +19,9 @@ import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import {useForm} from 'react-hook-form'
+import {z} from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const categories = [
   "Construction Materials",
@@ -46,19 +49,20 @@ export default function NewProductPage() {
   const searchParams = useSearchParams();
   const preselectedCategoryId = searchParams.get("categoryId");
 
+ const {register, handleSubmit,formState: { errors,isSubmitting }, setError} = useForm();
+
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     description: "",
     category: "",
     price: "",
-    stock: "",
-    minStock: "",
-    isActive: true,
+    discount: "",
   });
+
   const [images, setImages] = useState<
     Array<{ file: File; preview: string; name: string; size: number }>
   >([]);
+
   const [specifications, setSpecifications] = useState({
     material: "",
     dimensions: "",
@@ -77,24 +81,6 @@ export default function NewProductPage() {
     }
   }, [preselectedCategoryId]);
 
-  /*useEffect(() => {
-  async function fetchCategoryName() {
-    if (preselectedCategoryId) {
-      try {
-        const res = await axios.get(`/api/categories/${preselectedCategoryId}`)
-        const categoryName = res.data.name
-
-        if (categoryName) {
-          setFormData((prev) => ({ ...prev, category: categoryName }))
-        }
-      } catch (err) {
-        console.error("Category fetch error:", err)
-      }
-    }
-  }
-
-  fetchCategoryName()
-}, [preselectedCategoryId])*/
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -120,8 +106,8 @@ export default function NewProductPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const Submit = async(data:any) => {
+    // e.preventDefault();
     // Filter out empty specifications
 
     console.log("Form data:", formData);
@@ -130,47 +116,38 @@ export default function NewProductPage() {
       images.map((img) => img.file)
     );
     console.log("Specifications:", specifications);
+    const values = {
+        productName:formData.name,
+        images:["jjknjkn","hbjbjhb"],
+        primaryImage:"jknkjnj",
+        category:formData.category,
+        description:formData.description,
+        price:formData.price,
+        material:specifications.material,
+        size:specifications.dimensions,
+        weight:specifications.weight,
+        discount:formData.discount,
+        otherSpecification:specifications.other,
+    }
+    try {
+      const res = await axios.post("/api/product/add", values);
+      console.log(res)
+    } catch (error:any) {
+      alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
+    }
 
-    window.location.href = "/dashboard/products";
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // window.location.href = "/dashboard/products";
   };
 
-  /*const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-  try {
-    const formPayload = new FormData()
 
-    Object.entries(formData).forEach(([key, value]) => {
-      formPayload.append(key, value as string)
-    })
-
-    formPayload.append("specifications", JSON.stringify(specifications))
-
-    images.forEach((img, i) => {
-      formPayload.append("images", img.file)
-    })
-
-    const res = await axios.post("/api/products", formPayload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-
-    if (res.status === 200 || res.status === 201) {
-      window.location.href = "/dashboard/products"
-    } else {
-      console.error("Error:", res.statusText)
-    }
-  } catch (error) {
-    console.error("Submit failed:", error)
-  }
-}*/
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-start gap-4">
         <Link href="/dashboard/products">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Products
           </Button>
@@ -180,7 +157,7 @@ export default function NewProductPage() {
           <p className="text-gray-600">Create a new product in your catalog</p>
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(Submit)} className="space-y-6">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Information */}
           <div className="lg:col-span-2 space-y-6">
@@ -189,8 +166,8 @@ export default function NewProductPage() {
                 <CardTitle>Product Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
+                <div className="gap-4">
+                  <div className="space-y-2 w-full">
                     <Label htmlFor="name">Product Name *</Label>
                     <Input
                       id="name"
@@ -202,16 +179,7 @@ export default function NewProductPage() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sku">SKU *</Label>
-                    <Input
-                      id="sku"
-                      value={formData.sku}
-                      onChange={(e) => handleInputChange("sku", e.target.value)}
-                      placeholder="e.g., ISP-001"
-                      required
-                    />
-                  </div>
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
@@ -270,7 +238,7 @@ export default function NewProductPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dimensions">Dimensions</Label>
+                    <Label htmlFor="dimensions">Size</Label>
                     <Input
                       id="dimensions"
                       value={specifications.dimensions}
@@ -323,7 +291,7 @@ export default function NewProductPage() {
                 <CardTitle>Pricing & Inventory</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="price">Price ($) *</Label>
                     <Input
@@ -339,30 +307,19 @@ export default function NewProductPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="stock">Stock Quantity *</Label>
+                    <Label htmlFor="stock">Discount</Label>
                     <Input
                       id="stock"
                       type="number"
-                      value={formData.stock}
+                      value={formData.discount}
                       onChange={(e) =>
-                        handleInputChange("stock", e.target.value)
+                        handleInputChange("discount", e.target.value)
                       }
                       placeholder="0"
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="minStock">Minimum Stock</Label>
-                    <Input
-                      id="minStock"
-                      type="number"
-                      value={formData.minStock}
-                      onChange={(e) =>
-                        handleInputChange("minStock", e.target.value)
-                      }
-                      placeholder="0"
-                    />
-                  </div>
+                  
                 </div>
               </CardContent>
             </Card>
@@ -472,31 +429,14 @@ export default function NewProductPage() {
             </Card>
 
             {/* Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="isActive">Active Product</Label>
-                    <p className="text-sm text-gray-500">Product will be visible in catalog</p>
-                  </div>
-                  <Switch
-                    id="isActive"
-                    checked={formData.isActive}
-                    onCheckedChange={(checked) => handleInputChange("isActive", checked)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            
 
             {/* Actions */}
              <Card>
               <CardContent className="pt-6">
                 <div className="space-y-3">
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                    Create Product
+                  <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700">
+                    {isSubmitting ? "Creating..." : "Create Product"}
                   </Button>
                   <Link href="/dashboard/products" className="block">
                     <Button type="button" variant="outline" className="w-full bg-transparent">
