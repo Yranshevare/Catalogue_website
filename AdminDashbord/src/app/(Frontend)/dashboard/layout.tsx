@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { BarChart3, Factory, Home, LogOut, Menu, Package, Settings, Tag } from "lucide-react"
+import axios from "axios";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -26,7 +27,14 @@ export default function DashboardLayout({
    
 const pathname = usePathname();
 
-const handleLogout = () => {
+const handleLogout = async() => {
+  try {
+    const res = await axios.get("/api/auth/logout");
+    console.log(res);
+    
+  } catch (error:any) {
+    alert(error.message)
+  }
 window.location.href = "/"
 }
 
@@ -71,7 +79,7 @@ const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
       <div className="border-t p-4">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-600 hover:text-gray-900"
+          className="w-full justify-start text-gray-600 hover:text-gray-900 cursor-pointer"
           onClick={handleLogout}
         >
           <LogOut className="mr-3 h-5 w-5" />

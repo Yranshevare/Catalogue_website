@@ -8,37 +8,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Eye, EyeOff, Factory } from "lucide-react"
+import {useForm} from 'react-hook-form'
+import { set, z} from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const schema = z.object({
+  email: z.string().email("enter a valid email"),
+  password: z.string().min(8,  "Password must be at least 8 characters" ),
+})
+
+type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Simulate login - in real app, this would authenticate
-    if (email && password) {
-      window.location.href = "/dashboard"
-    }
-  }
 
-  /* const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+  const {register, handleSubmit,formState: { errors }, setError} = useForm<FormData>({resolver: zodResolver(schema)});
+
+
+  const handleLogin = async(data: {email: string, password: string}) => {
+    console.log(data);
     try {
-      const response = await axios.post("http://localhost:5000/api/login", {
-        email,
-        password,
-      })
-      if (response.status === 200) {
-        console.log("Login successful:", response.data)
+      const res = await axios.get(`/api/auth/login?email=${data.email}&password=${data.password}`)
+      if (res.status === 200) {
         window.location.href = "/dashboard"
       }
-    } catch (err: any) {
-      console.error("Login error:", err)
-      setError(err?.response?.data?.message || "Login failed. Please try again.")
+    } catch (error:any) {
+      console.log(error)
+      setError("root", {
+        type: "manual",
+        message: error.response.data.message  || "Something went wrong please try again",
+      })
     }
-  }*/
+    
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -52,17 +56,19 @@ export default function LoginPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="admin@factory.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
                 required
               />
+              <div className="h-2">
+                {errors.email && <p className="text-red-500 text-[11px]">{errors.email.message}</p>}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -71,10 +77,12 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                   required
                 />
+                <div className="h-2">
+                  {errors.password && <p className="text-red-500 text-[11px]">{errors.password.message}</p>}
+                </div>
                 <Button
                   type="button"
                   variant="ghost"
@@ -90,9 +98,12 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer">
               Sign In
             </Button>
+            <div className="h-2 text-center">
+              {errors.root && <p className="text-red-500 text-[11px]">{errors.root.message}</p>}
+            </div>
           </form>
         </CardContent>
       </Card>
