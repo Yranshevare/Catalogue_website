@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma"
 import response from "@/lib/response"
+import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
 import { NextRequest } from "next/server"
 
 type DataType = {
@@ -28,12 +29,21 @@ export async function POST(req:NextRequest){
             }
         })       
         
-        
+        console.log(data);
+        const pImage = await uploadOnCloudinary(data.primaryImage)
+
+        const img = []
+        for await (const i of data.images) {
+            img.push(await uploadOnCloudinary(i))
+        } 
+        let images:any = await Promise.all(img)
+        images = images.filter((i:any) => i !== null).map((i:any) => i.url)
+
         const product = await prisma.product.create({
             data:{
                 productName:data.productName,
-                images:data.images,
-                primaryImage:data.primaryImage,
+                images:images || data.images,
+                primaryImage:pImage?.url || data.primaryImage,
                 category:category?.categoryName,
                 description:data.description,
                 price:data.price,

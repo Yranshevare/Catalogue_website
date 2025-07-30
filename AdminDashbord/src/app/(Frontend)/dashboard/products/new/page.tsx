@@ -22,6 +22,7 @@ import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
 import {z} from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod';
+import addImageToLocalServer from "@/lib/localImg";
 
 const categories = [
   "Construction Materials",
@@ -107,19 +108,19 @@ export default function NewProductPage() {
   };
 
   const Submit = async(data:any) => {
-    // e.preventDefault();
-    // Filter out empty specifications
+    
+    let image = []
+    for await (const img of images) {
+      console.log(img)
+      if(img.file){
+        image.push(await addImageToLocalServer(img.file))
+      }
+    } 
 
-    console.log("Form data:", formData);
-    console.log(
-      "Images:",
-      images.map((img) => img.file)
-    );
-    console.log("Specifications:", specifications);
     const values = {
         productName:formData.name,
-        images:["jjknjkn","hbjbjhb"],
-        primaryImage:"jknkjnj",
+        images:image.slice(1),
+        primaryImage:image[0],
         category:formData.category,
         description:formData.description,
         price:formData.price,
@@ -136,7 +137,6 @@ export default function NewProductPage() {
       alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
     // window.location.href = "/dashboard/products";
   };
 
@@ -288,7 +288,7 @@ export default function NewProductPage() {
             {/* Pricing & Inventory */}
             <Card>
               <CardHeader>
-                <CardTitle>Pricing & Inventory</CardTitle>
+                <CardTitle>Pricing & Discount</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -310,7 +310,7 @@ export default function NewProductPage() {
                     <Label htmlFor="stock">Discount</Label>
                     <Input
                       id="stock"
-                      type="number"
+                      type="text"
                       value={formData.discount}
                       onChange={(e) =>
                         handleInputChange("discount", e.target.value)
