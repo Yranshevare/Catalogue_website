@@ -40,6 +40,9 @@ import {
   Eye,
 } from "lucide-react";
 import Link from "next/link";
+import {useForm} from 'react-hook-form'
+import {set, z} from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod';
 
 // Mock data
 const categories = [
@@ -97,67 +100,48 @@ const categories = [
 export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState({
-    name: "",
-    description: "",
-  });
+  const [categories, setCategories] = useState([]);
 
-  /*const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {register, handleSubmit,formState: { errors,isSubmitting }, setError} = useForm();
+
+   
+
+  const loadCategorys = async() => {
+    const category = await axios.get("/api/Category/getAll");
+    console.log(category);
+    setCategories(category.data.data)
+  }
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get("/api/categories"); 
-        setCategories(res.data);
-      } catch (err) {
-        console.error("Error fetching categories:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    loadCategorys()
+  },[])
 
-    fetchCategories();
-  }, []);*/
 
-  const filteredCategories = categories.filter(
-    (category) =>
-      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+
+  if(categories?.length < 0) return <div>Loading...</div>
+
+  const filteredCategories = categories?.filter(
+    (category:any) =>
+      category.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       category.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddCategory = () => {
+  const handleAddCategory = async(data:any) => {
     // Handle adding new category
-    console.log("Adding category:", newCategory);
-    setIsAddDialogOpen(false);
-    setNewCategory({ name: "", description: "" });
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log(data)
+    try {
+      const res = await axios.post("/api/Category/create", data);
+      console.log(res)
+      if(res.status === 200) loadCategorys()
+    } catch (error:any) {
+      alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
+    }finally{
+      setIsAddDialogOpen(false)
+    }
   };
 
-  {
-    /* Add category */
-  }
-  /*const handleAddCategory = async () => {
-    try {
-      const res = await axios.post("/api/categories", newCategory);
-      setCategories((prev) => [...prev, res.data]); 
-      setNewCategory({ name: "", description: "" });
-      setIsAddDialogOpen(false);
-    } catch (err) {
-      console.error("Error adding category:", err);
-    }
-  };*/
 
-  {
-    /* category deletion */
-  }
-  /*const handleDelete = async (id: string) => {
-  try {
-    await axios.delete(`/api/categories/${id}`);
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-  } catch (err) {
-    console.error("Failed to delete category:", err);
-  }
-};*/
 
   return (
     <div className="space-y-6">
@@ -183,19 +167,13 @@ export default function CategoriesPage() {
                 Create a new category to organize your products.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleAddCategory} className="space-y-4">
+            <form onSubmit={handleSubmit(handleAddCategory)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="categoryName">Category Name</Label>
                 <Input
                   id="categoryName"
                   required
-                  value={newCategory.name}
-                  onChange={(e) =>
-                    setNewCategory((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
+                  {...register("name")}
                   placeholder="Enter category name"
                 />
               </div>
@@ -203,13 +181,7 @@ export default function CategoriesPage() {
                 <Label htmlFor="categoryDescription">Description</Label>
                 <Textarea
                   id="categoryDescription"
-                  value={newCategory.description}
-                  onChange={(e) =>
-                    setNewCategory((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
+                  {...register("description")}
                   required
                   placeholder="Enter category description"
                   rows={3}
@@ -218,12 +190,11 @@ export default function CategoriesPage() {
               <DialogFooter>
                 <Button
                   variant="outline"
-                  onClick={() => setIsAddDialogOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  Add Category
+                <Button className={`${isSubmitting ? 'bg-blue-700':'bg-blue-600'} hover:bg-blue-700`}>
+                  {isSubmitting ? "Adding..." : "Add Category"}
                 </Button>
               </DialogFooter>
             </form>
@@ -248,7 +219,7 @@ export default function CategoriesPage() {
 
       {/* Categories Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredCategories.map((category) => (
+        {filteredCategories.map((category:any) => (
           <Card key={category.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center space-x-2">
@@ -257,7 +228,7 @@ export default function CategoriesPage() {
                 </div>
                 <Link href={`/dashboard/categories/${category.id}`}>
                   <CardTitle className="text-lg hover:text-blue-600 cursor-pointer">
-                    {category.name}
+                    {category.categoryName}
                   </CardTitle>
                 </Link>
               </div>
