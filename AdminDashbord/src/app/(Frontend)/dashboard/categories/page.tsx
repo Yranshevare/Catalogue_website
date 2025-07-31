@@ -106,14 +106,14 @@ export default function CategoriesPage() {
 
    
 
-  const loadCategorys = async() => {
+  const loadCategory = async() => {
     const category = await axios.get("/api/Category/getAll");
     console.log(category);
     setCategories(category.data.data)
   }
 
   useEffect(() => {
-    loadCategorys()
+    loadCategory()
   },[])
 
 
@@ -133,7 +133,7 @@ export default function CategoriesPage() {
     try {
       const res = await axios.post("/api/Category/create", data);
       console.log(res)
-      if(res.status === 200) loadCategorys()
+      if(res.status === 200) loadCategory()
     } catch (error:any) {
       alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
     }finally{
