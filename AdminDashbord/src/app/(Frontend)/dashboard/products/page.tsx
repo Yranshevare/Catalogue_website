@@ -1,10 +1,9 @@
 "use client";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -95,53 +94,48 @@ type products = {
 };
 
 export default function ProductsPage() {
-  
-    {/* Data Handling */}
-  /*const [products, setProducts] = useState<products[]>([]);
-    useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const productsRes = await axios.get("/api/products");
-        setProducts(productsRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData()
-    },[])*/
-
-   {/* product deletion */}
-  /*const handleDelete = async (id: string) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this product?");
-  if (!confirmDelete) return;
-  try {
-    // Delete from backend
-    await axios.delete(`/api/products/${id}`);
-    fetchData()
-  } catch (error) {
-    console.error("Delete failed:", error);
-    alert("Failed to delete product.");
-  }
-};*/
-
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const filteredProducts = products.filter((product) => {
+  const [availableCategory, setAvailableCategory] = useState([]);
+  const [products, setProducts] = useState<products[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await axios.get("/api/product/getAll");
+      console.log(response.data);
+      if (response.status === 200){
+        setProducts(response.data.data.products);
+        setAvailableCategory(response.data.data.category)
+        setIsLoading(false);
+      }
+
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+
+
+  const filteredProducts = products.filter((product:any) => {
     const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      product.status.toLowerCase().includes(statusFilter.toLowerCase());
+      product?.productName.toLowerCase().includes(searchTerm.toLowerCase()) 
+
     const matchesCategory =
       categoryFilter === "all" || product.category === categoryFilter;
 
-    return matchesSearch && matchesStatus && matchesCategory;
+    return matchesSearch  && matchesCategory;
   });
 
-  const categories = [...new Set(products.map((p) => p.category))];
+  const categories = [...new Set(availableCategory.map((p:any) => p.categoryName))];
+
+
+  if (isLoading) return <div className="text-center flex items-center justify-center w-full h-[80vh]">Loading...</div>;
 
   return (
     <div className="space-y-6">
@@ -172,17 +166,6 @@ export default function ProductsPage() {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="low">Low Stock</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by category" />
@@ -211,55 +194,34 @@ export default function ProductsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Product</TableHead>
-                  <TableHead>SKU</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product:any) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <img
-                          src={product.image || "/placeholder.svg"}
+                          src={product.primaryImage || "/placeholder.svg"}
                           alt={product.name}
                           className="w-10 h-10 rounded-md object-cover"
                         />
                         <div>
                           <Link href={`/dashboard/products/${product.id}`}>
                             <div className="font-medium text-gray-900 hover:text-blue-600 cursor-pointer">
-                              {product.name}
+                              {product.productName}
                             </div>
                           </Link>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {product.sku}
-                    </TableCell>
+                    
                     <TableCell>{product.category}</TableCell>
-                    <TableCell>${product.price.toFixed(2)}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          product.status === "Active"
-                            ? "default"
-                            : "destructive"
-                        }
-                        className={
-                          product.status === "Active"
-                            ? "bg-green-100 text-green-800"
-                            : ""
-                        }
-                      >
-                        {product.status}
-                      </Badge>
-                    </TableCell>
+                    <TableCell>${product.price}</TableCell>
+                    
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

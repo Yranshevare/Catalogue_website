@@ -2,7 +2,7 @@
 
 import type React from "react";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
-import {z} from 'zod'
+import {set, z} from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod';
 import addImageToLocalServer from "@/lib/localImg";
 
@@ -70,6 +70,25 @@ export default function NewProductPage() {
     weight: "",
     other: "",
   });
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+
+  const fetchData = useCallback(async () => {
+    try {
+      const response = await axios.get("/api/Category/getName");
+      console.log(response.data.data);
+      setCategories(response.data.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (preselectedCategoryId) {
@@ -108,6 +127,10 @@ export default function NewProductPage() {
   };
 
   const Submit = async(data:any) => {
+    if(images.length < 1){
+      alert("Please add at least one image")
+      return
+    }
     
     let image = []
     for await (const img of images) {
@@ -130,6 +153,7 @@ export default function NewProductPage() {
         discount:formData.discount,
         otherSpecification:specifications.other,
     }
+    console.log(values)
     try {
       const res = await axios.post("/api/product/add", values);
       console.log(res)
@@ -137,10 +161,13 @@ export default function NewProductPage() {
       alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
     }
 
-    // window.location.href = "/dashboard/products";
+    window.location.href = "/dashboard/products";
   };
 
 
+  if (isLoading) {
+    return <div className="text-center flex items-center justify-center w-full h-[80vh]">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -205,9 +232,9 @@ export default function NewProductPage() {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                      {categories.map((category:any, index) => (
+                        <SelectItem key={index} value={category.categoryName}>
+                          {category.categoryName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -337,7 +364,7 @@ export default function NewProductPage() {
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
                   <div className="mt-4">
                     <Label htmlFor="images" className="cursor-pointer">
-                      <span className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                      <span className="text-sm font-medium text-center w-full text-blue-600 hover:text-blue-500">
                         {images.length === 0 ? "Upload product images" : "Add more images"}
                       </span>
                       <Input
