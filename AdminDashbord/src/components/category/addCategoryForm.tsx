@@ -28,7 +28,7 @@ export default function AddCategoryForm({loadCategory}:any) {
         try {
           const res = await axios.post("/api/Category/create", data);
           console.log(res)
-          loadCategory()
+          if (loadCategory) loadCategory()
         } catch (error:any) {
           alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
         }finally{
