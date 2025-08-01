@@ -21,19 +21,24 @@ import {
 import Link from "next/link";
 import AddCategoryForm from "@/components/category/addCategoryForm";
 import { useEffect, useState } from "react";
+import { set } from "zod";
+
+
 
 
 export default  function CategoriesPage() {
 
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
 
 
 
   const loadCategory = async() => {
     const category = await axios.get("/api/Category/getAll");
     console.log(category);
-    setCategories(category.data.data)
+    setCategories(category.data.data )
+    setLoading(false)
   }
 
   useEffect(() => {
@@ -48,7 +53,7 @@ export default  function CategoriesPage() {
   );
 
 
-  if(categories?.length == 0) return <div className="text-center flex items-center justify-center w-full h-[80vh]">Loading...</div>
+  if(loading) return <div className="text-center flex items-center justify-center w-full h-[80vh]">Loading...</div>
 
   return (
     <div className="space-y-6">
@@ -60,7 +65,7 @@ export default  function CategoriesPage() {
             Organize your products into categories
           </p>
         </div>
-        <AddCategoryForm/>
+        <AddCategoryForm loadCategory={loadCategory}/>
       </div>
 
       {/* Search */}
@@ -128,7 +133,7 @@ export default  function CategoriesPage() {
               </p>
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
-                  {category.productCount} products
+                  {category._count.product} products
                 </div>
                 
               </div>
