@@ -4,6 +4,9 @@ import { NextRequest } from "next/server"
 
 export async function POST(req:NextRequest) {
     try {
+        if (!req.cookies.get("refreshToken")) {
+            return response({message:"refresh token is missing", error: "unauthorize access", status: 400 });
+        }
         const value = await req.json()
 
         if(!value?.name){        // for empty email or password

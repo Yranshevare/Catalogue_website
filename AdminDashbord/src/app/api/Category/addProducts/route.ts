@@ -3,10 +3,12 @@ import response from "@/lib/response";
 import { NextRequest } from "next/server";
 
 export async function POST(req:NextRequest) {
-    console.log("lll")
     try {
+        if (!req.cookies.get("refreshToken")) {
+            return response({message:"refresh token is missing", error: "unauthorize access", status: 400 });
+        }
         const {products,category}:any =await  req.json()
-        console.log(products,category)
+        // console.log(products,category)
 
         const NewProducts = await prisma.product.updateMany({
             where: {
