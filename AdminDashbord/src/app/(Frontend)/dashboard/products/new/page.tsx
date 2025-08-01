@@ -15,14 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
-import {set, z} from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod';
 import addImageToLocalServer from "@/lib/localImg";
+import { refresh } from "../refreshDashbord";
 
 const categories = [
   "Construction Materials",
@@ -157,6 +155,7 @@ export default function NewProductPage() {
     try {
       const res = await axios.post("/api/product/add", values);
       console.log(res)
+      await refresh()
     } catch (error:any) {
       alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
     }
