@@ -62,9 +62,11 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
       setCategory(res.data.data.category)
       setProductsInCategory(res.data.data.category.product)
       setOtherProducts(res.data.data.otherProducts)
-      setIsLoading(false)
+      
     } catch (error) {
       console.error("Error fetching category data:", error);
+    }finally{
+      setIsLoading(false)
     }
   };
 

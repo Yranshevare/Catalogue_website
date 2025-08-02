@@ -118,13 +118,7 @@ export default  function CategoriesPage() {
                       Edit
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    /*onClick={() => handleDelete(category.id)}*/
-                    className="text-red-600 cursor-pointer"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
+                  
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardHeader>
