@@ -74,6 +74,7 @@ export default function AddCategoryForm({loadCategory}:any) {
               </div>
               <DialogFooter>
                 <Button
+                  disabled={isSubmitting}
                   variant="outline"
                 >
                   Cancel

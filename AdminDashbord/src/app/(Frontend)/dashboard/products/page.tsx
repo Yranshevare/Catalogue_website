@@ -220,19 +220,19 @@ export default function ProductsPage() {
                     </TableCell>
                     
                     <TableCell>{product.category}</TableCell>
-                    <TableCell>${product.price}</TableCell>
+                    <TableCell>{product.price} Rs</TableCell>
                     
-                    <TableCell className="text-right">
+                    <TableCell className="text-right ">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" >
                              <DropdownMenuItem asChild>
                             <Link href={`/dashboard/products/${product.id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className="mr-2 h-4 w-4 " />
                               View
                             </Link>
                           </DropdownMenuItem>
@@ -242,12 +242,12 @@ export default function ProductsPage() {
                               Edit
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          {/* <DropdownMenuItem 
                           //onClick={() => handleDelete(product.id)}
                           className="text-red-600">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
-                          </DropdownMenuItem>
+                          </DropdownMenuItem> */}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

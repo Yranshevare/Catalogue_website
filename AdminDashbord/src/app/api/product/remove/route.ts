@@ -1,3 +1,4 @@
+import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru";
 import prisma from "@/lib/prisma";
 import response from "@/lib/response";
 import { NextRequest } from "next/server";
@@ -15,8 +16,25 @@ export async function DELETE(req:NextRequest) {
         if(!req.cookies.get("refreshToken")){    // for already logged in user
             return response({error:"unauthorize access",status:400})
         }
+        const product = await prisma.product.findUnique({
+            where:{
+                id:id
+            }
+        })
 
-        const product = await prisma.product.delete({
+        if(!product){        // for empty email or password
+            return response({message:"product not found",status:400})
+        }
+        if(product.primaryImage){
+            const res = await deleteCloudinaryImage(product.primaryImage)
+        }
+        if(product.images.length !== 0){
+            await Promise.all(
+              product.images.map(image => deleteCloudinaryImage(image))
+            );
+        }
+
+        const deletedProduct = await prisma.product.delete({
             where:{
                 id:id
             }
@@ -25,7 +43,7 @@ export async function DELETE(req:NextRequest) {
         return response({
             message:"product removed successfully",
             status:200,
-            data:product
+            data:deletedProduct
         })
     } catch (error:any) {
         return response({message:"error while decoding the refresh token",status:400,error:error.message})

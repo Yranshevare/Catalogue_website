@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { set } from "zod";
+import { refresh } from "../refreshDashbord";
 
 // Mock product data - in a real app, this would come from your database
 const productData = {
@@ -58,18 +59,18 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
   const [product,setProduct] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true);
   const [images, setImages] = useState<any>([]);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
 
 
   {
     /* Data fetching */
   }
-  /*const [product, setProduct] = useState<any>(null)*/
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`/api/product/getOne?id=${id}`)
-        console.log(res.data)
+        console.log(res.data,"lll")
         setProduct(res.data.data.products)
         setImages([res.data.data.products.primaryImage,...res.data.data.products.images])
         // setIsLoading(false)
@@ -82,6 +83,21 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
     }
 
     fetchProduct()
+  }, [])
+
+  const deleteProduct = useCallback(async (id:string) => {
+    if(!confirm("Are you sure you want to delete this product?")) return
+    setDeleteLoading(true)
+    try {
+      const res = await axios.delete(`/api/product/remove?id=${id}`)
+      console.log(res.data)
+      if(res.status == 200){
+        window.location.href = "/dashboard/products"
+        refresh()
+      }
+    } catch (err) {
+      console.error("Failed to delete product", err)
+    }
   }, [])
 
 
@@ -107,26 +123,33 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex flex-col items-start gap-4">
-          <Link href="/dashboard/products">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              disabled={deleteLoading} 
+              className="cursor-pointer"
+              onClick={() => (window.location.href = "/dashboard/products/")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4 " />
               Back to Products
             </Button>
-          </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/dashboard/products/edit/${product.id}`}>
-            <Button variant="outline" size="sm">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Product
-            </Button>
-          </Link>
-          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+          <Button disabled={deleteLoading} onClick={() => (window.location.href = "/dashboard/products/edit/" + product.id )} variant="outline" size="sm" className="cursor-pointer">
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Product
+          </Button>
+          <Button variant="outline" disabled={deleteLoading} onClick={() => deleteProduct(product.id)} size="sm" className="text-red-600 hover:text-red-700 bg-transparent cursor-pointer">
+            {
+              deleteLoading ? <Loader2 className="animate-spin  h-4 w-4"/> :
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </>
+            }
           </Button>
         </div>
       </div>
@@ -301,20 +324,23 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href={`/dashboard/products/edit/${product.id}`}>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700">
+            <CardContent className="!space-y-3">
+                <Button disabled={deleteLoading} onClick={() => (window.location.href = "/dashboard/products/edit/" + product.id )} className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700">
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Product
                 </Button>
-              </Link>
-              <Button variant="outline" className="w-full bg-transparent">
+              <Button variant="outline" disabled={deleteLoading} onClick={() => (window.location.href = "/dashboard/products/"  )} className="w-full cursor-pointer bg-transparent">
                 <Eye className="mr-2 h-4 w-4" />
                 View in Catalog
               </Button>
-              <Button variant="outline" className="w-full text-red-600 hover:text-red-700 bg-transparent">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Product
+              <Button variant="outline" onClick={() => deleteProduct(product.id)} className="w-full text-red-600 cursor-pointer hover:text-red-700 bg-transparent">
+                {
+                  deleteLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/>:
+                  <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Product
+                  </>
+                }
               </Button>
             </CardContent>
           </Card>

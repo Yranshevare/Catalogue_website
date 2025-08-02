@@ -119,7 +119,7 @@ export default function AddProducts({category, otherProducts,setIsAddProductDial
                           className="form-checkbox h-4 w-4 text-blue-600 rounded"
                         />
                         <img
-                          src={product.productName || "/placeholder.svg"}
+                          src={product.primaryImage || "/placeholder.svg"}
                           alt={""}
                           className="w-8 h-8 rounded-md object-cover"
                         />
@@ -162,22 +162,21 @@ export default function AddProducts({category, otherProducts,setIsAddProductDial
                 Create a brand new product and automatically assign it
                 to this category.
               </p>
-              <Link
-                href={`/dashboard/products/new?categoryId=${category.id}`}
-              >
                 <Button
                   variant="outline"
                   className="w-full bg-transparent"
+                  disabled={isLoading}
+                  onClick={() => (window.location.href = "/dashboard/products/new")}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create New Product
                 </Button>
-              </Link>
             </div>
           </div>
           <DialogFooter>
             <Button
               variant="ghost"
+              disabled={isLoading}
               onClick={() => setIsAddProductDialogOpen(false)}
             >
               Close

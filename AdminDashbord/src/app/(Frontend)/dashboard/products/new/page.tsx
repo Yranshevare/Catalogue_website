@@ -465,7 +465,7 @@ export default function NewProductPage() {
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Product"}
                   </Button>
                   <Link href="/dashboard/products" className="block">
-                    <Button type="button" variant="outline" className="w-full bg-transparent">
+                    <Button disabled={isSubmitting} type="button" variant="outline" className="w-full bg-transparent">
                       Cancel
                     </Button>
                   </Link>
