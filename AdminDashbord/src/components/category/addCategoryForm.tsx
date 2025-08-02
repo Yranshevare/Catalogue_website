@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from '../ui/button';
-import { Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { Label } from '@radix-ui/react-label';
 import { Input } from '../ui/input';
 import { useForm } from 'react-hook-form';
@@ -78,8 +78,10 @@ export default function AddCategoryForm({loadCategory}:any) {
                 >
                   Cancel
                 </Button>
-                <Button className={`${isSubmitting ? 'bg-blue-700':'bg-blue-600'} hover:bg-blue-700`}>
-                  {isSubmitting ? "Adding..." : "Add Category"}
+                <Button disabled={isSubmitting}  className={`bg-blue-700 hover:bg-blue-700`}>
+                  {
+                    isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Add Category"
+                  }
                 </Button>
               </DialogFooter>
             </form>

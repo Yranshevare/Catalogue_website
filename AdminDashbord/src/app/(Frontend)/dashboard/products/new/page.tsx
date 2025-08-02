@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Upload, X } from "lucide-react";
+import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
@@ -462,7 +462,7 @@ export default function NewProductPage() {
               <CardContent className="pt-6">
                 <div className="space-y-3">
                   <Button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700">
-                    {isSubmitting ? "Creating..." : "Create Product"}
+                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Product"}
                   </Button>
                   <Link href="/dashboard/products" className="block">
                     <Button type="button" variant="outline" className="w-full bg-transparent">

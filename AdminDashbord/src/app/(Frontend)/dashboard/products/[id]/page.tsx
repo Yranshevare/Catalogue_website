@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,10 @@ import {
   Warehouse,
   Calendar,
   Eye,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { set } from "zod";
 
 // Mock product data - in a real app, this would come from your database
 const productData = {
@@ -45,17 +47,48 @@ const productData = {
   },
 };
 
-export default function ProductDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const [selectedImage, setSelectedImage] = useState(0);
-  // In a real app, you would fetch productData based on params.id
-  // For now, we're using the mock productData directly.
-  const product = productData; // Assuming productData matches the ID for this example
+interface ProductPageProps {
+  params: Promise<{ id: string }>; // params is a Promise
+}
 
-  if (!product) {
+export default function ProductDetailPage({params,}: ProductPageProps) {
+    const { id } = React.use(params);
+  const [selectedImage, setSelectedImage] = useState(0);
+  // const product = productData; // Assuming productData matches the ID for this example
+  const [product,setProduct] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true);
+  const [images, setImages] = useState<any>([]);
+
+
+
+  {
+    /* Data fetching */
+  }
+  /*const [product, setProduct] = useState<any>(null)*/
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`/api/product/getOne?id=${id}`)
+        console.log(res.data)
+        setProduct(res.data.data.products)
+        setImages([res.data.data.products.primaryImage,...res.data.data.products.images])
+        // setIsLoading(false)
+      } catch (err) {
+        console.error("Failed to fetch product", err)
+        // setError("Unable to fetch product data.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchProduct()
+  }, [])
+
+
+  if(isLoading){return <div className="text-center flex items-center justify-center w-full h-[80vh]"><Loader2 className="animate-spin mr-5"/>Loading...</div>}
+
+
+    if (!product) {
     return (
       <div className="text-center py-10 text-gray-600">
         Product not found.{" "}
@@ -69,31 +102,11 @@ export default function ProductDetailPage({
     );
   }
 
-  {
-    /* Data fetching */
-  }
-  /*const [product, setProduct] = useState<any>(null)
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await axios.get(`/api/products/${params.id}`)
-        setProduct(res.data)
-      } catch (err) {
-        console.error("Failed to fetch product", err)
-        setError("Unable to fetch product data.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProduct()
-  }, [params.id])*/
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start gap-4">
           <Link href="/dashboard/products">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -102,7 +115,6 @@ export default function ProductDetailPage({
           </Link>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
-            <p className="text-gray-600">SKU: {product.sku}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -132,16 +144,16 @@ export default function ProductDetailPage({
                 {/* Main Image */}
                 <div className="aspect-square w-full max-w-md mx-auto">
                   <img
-                    src={product.images[selectedImage] || "/placeholder.svg"}
+                    src={images[selectedImage] || "/placeholder.svg"}
                     alt={`${product.name} - Image ${selectedImage + 1}`}
                     className="w-full h-full object-cover rounded-lg border"
                   />
                 </div>
 
                 {/* Thumbnail Images */}
-                {product.images.length > 1 && (
+                {images.length > 1 && (
                   <div className="flex gap-2 justify-center flex-wrap">
-                    {product.images.map((image, index) => (
+                    {images.map((image:any, index:number) => (
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
@@ -170,7 +182,7 @@ export default function ProductDetailPage({
               <CardTitle>Product Description</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              <p className="text-gray-700 leading-relaxed">{product.description || "No description available."}</p>
             </CardContent>
           </Card>
 
@@ -181,30 +193,37 @@ export default function ProductDetailPage({
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
-                {product.specifications.material && (
+                {product.material && (
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <span className="font-medium text-gray-900">Material:</span>
-                    <span className="text-gray-700">{product.specifications.material}</span>
+                    <span className="text-gray-700">{product?.material }</span>
                   </div>
                 )}
-                {product.specifications.dimensions && (
+                {product.size && (
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span className="font-medium text-gray-900">Dimensions:</span>
-                    <span className="text-gray-700">{product.specifications.dimensions}</span>
+                    <span className="font-medium text-gray-900">Size:</span>
+                    <span className="text-gray-700">{product.size}</span>
                   </div>
                 )}
-                {product.specifications.weight && (
+                {product?.weight && (
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <span className="font-medium text-gray-900">Weight:</span>
-                    <span className="text-gray-700">{product.specifications.weight}</span>
+                    <span className="text-gray-700">{product.weight}</span>
                   </div>
                 )}
-                {product.specifications.other && (
+                {product.otherSpecification && (
                   <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <span className="font-medium text-gray-900">Other:</span>
-                    <span className="text-gray-700">{product.specifications.other}</span>
+                    <span className="text-gray-700">{product.otherSpecification}</span>
                   </div>
                 )}
+                {
+                  !product.material && !product.size && !product.weight && !product.otherSpecification && (
+                    <div className="flex justify-between items-center p-3 rounded-lg">
+                      <span className="font-medium text-gray-900">No Specifications Provided</span>
+                    </div>
+                  )
+                }
               </div>
             </CardContent>
           </Card>
@@ -215,22 +234,14 @@ export default function ProductDetailPage({
           {/* Product Status */}
           <Card>
             <CardHeader>
-              <CardTitle>Product Status</CardTitle>
+              <CardTitle>Product Category</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">Status</span>
-                <Badge
-                  variant={product.status === "Active" ? "default" : "destructive"}
-                  className={product.status === "Active" ? "bg-green-100 text-green-800" : ""}
-                >
-                  {product.status}
-                </Badge>
-              </div>
+              
               <Separator />
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600">Category</span>
-                <span className="text-sm text-gray-900">{product.category}</span>
+                <span className="text-sm text-gray-900">{product.category || "Unknown"}</span>
               </div>
             </CardContent>
           </Card>
@@ -238,7 +249,7 @@ export default function ProductDetailPage({
           {/* Pricing & Inventory */}
           <Card>
             <CardHeader>
-              <CardTitle>Pricing & Inventory</CardTitle>
+              <CardTitle>Pricing & Discount</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -246,26 +257,17 @@ export default function ProductDetailPage({
                   <DollarSign className="w-4 h-4 text-gray-400" />
                   <span className="text-sm font-medium text-gray-600">Price</span>
                 </div>
-                <span className="text-lg font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                <span className="text-lg font-bold text-gray-900">${product.price}</span>
               </div>
               <Separator />
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Warehouse className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-600">Stock</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-lg font-bold text-gray-900">{product.stock}</span>
-                  <p className="text-xs text-gray-500">Min: {product.minStock}</p>
-                </div>
-              </div>
-              <Separator />
+              
+              
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Package className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-600">SKU</span>
+                  <span className="text-sm font-medium text-gray-600">Discount</span>
                 </div>
-                <span className="text-sm font-mono text-gray-900">{product.sku}</span>
+                <span className="text-sm font-mono text-gray-900">{product.discount || "none"}</span>
               </div>
             </CardContent>
           </Card>

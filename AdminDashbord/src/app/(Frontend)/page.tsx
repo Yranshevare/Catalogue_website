@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, Factory } from "lucide-react"
+import { Eye, EyeOff, Factory, Loader, Loader2 } from "lucide-react"
 import {useForm} from 'react-hook-form'
 import { set, z} from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
 
-  const {register, handleSubmit,formState: { errors }, setError} = useForm<FormData>({resolver: zodResolver(schema)});
+  const {register, handleSubmit,formState: { errors, isSubmitting }, setError} = useForm<FormData>({resolver: zodResolver(schema)});
 
 
   const handleLogin = async(data: {email: string, password: string}) => {
@@ -98,8 +98,13 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer">
-              Sign In
+            <Button type="submit"  disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 cursor-pointer">
+              {
+                isSubmitting ?
+                <Loader2 className="w-4 h-4 mr-2 animate-spin"/>
+                :
+                <span>Sign In</span>
+              }
             </Button>
             <div className="h-2 text-center">
               {errors.root && <p className="text-red-500 text-[11px]">{errors.root.message}</p>}

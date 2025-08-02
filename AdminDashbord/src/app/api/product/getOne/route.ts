@@ -14,20 +14,7 @@ export async function GET(req:NextRequest){
             where:{
                 id:id
             },
-            select:{
-                id:true,
-                productName:true,
-                images:true,
-                primaryImage:true,
-                category:true,
-                description:true,
-                price:true,
-                material:true,
-                size:true,
-                weight:true,
-                discount:true,
-                otherSpecification:true
-            }
+            
         })
 
         return response({
