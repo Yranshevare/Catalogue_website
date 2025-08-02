@@ -11,6 +11,7 @@ import {
   Calendar,
   Eye,
   Plus,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -73,8 +74,8 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
   
   if (isLoading) {
     return (
-      <div className="text-center py-10 text-gray-600">
-        loading....
+      <div className="text-center flex justify-center py-10 text-gray-600">
+        <Loader2 className="h-5 w-5 animate-spin"/>loading....
       </div>
     );
   }

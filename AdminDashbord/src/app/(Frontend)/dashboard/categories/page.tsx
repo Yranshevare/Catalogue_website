@@ -17,6 +17,7 @@ import {
   MoreHorizontal,
   Tag,
   Eye,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import AddCategoryForm from "@/components/category/addCategoryForm";
@@ -53,7 +54,7 @@ export default  function CategoriesPage() {
   );
 
 
-  if(loading) return <div className="text-center flex items-center justify-center w-full h-[80vh]">Loading...</div>
+  if(loading) return <div className="text-center flex items-center justify-center w-full h-[80vh]">< Loader2 className="h-5 w-5 animate-spin"/>Loading...</div>
 
   return (
     <div className="space-y-6">

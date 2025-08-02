@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 // Mock data
@@ -135,7 +135,7 @@ export default function ProductsPage() {
   const categories = [...new Set(availableCategory.map((p:any) => p.categoryName))];
 
 
-  if (isLoading) return <div className="text-center flex items-center justify-center w-full h-[80vh]">Loading...</div>;
+  if (isLoading) return <div className="text-center flex items-center justify-center w-full h-[80vh]"><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Loading...</div>;
 
   return (
     <div className="space-y-6">
