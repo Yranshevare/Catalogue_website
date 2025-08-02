@@ -13,7 +13,7 @@ export async function GET(req:NextRequest){
                 }
             }
         })
-        console.log(category)
+        // console.log(category)
 
         return response({
             message:"category fetched successfully",

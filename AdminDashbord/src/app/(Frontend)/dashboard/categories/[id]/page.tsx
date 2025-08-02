@@ -18,9 +18,10 @@ import {
   Dialog,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AddProducts from "@/components/category/AddProducts";
 import React from "react";
+import { refresh } from "../../products/refreshDashbord";
 
 
 
@@ -47,6 +48,7 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
   const [productsInCategory, setProductsInCategory] = useState<any[]>([]);
   const [otherProducts, setOtherProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
 
 
@@ -56,7 +58,7 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
     try {
       console.log(categoryId)
       const res = await axios.get(`/api/Category/getOne?id=${categoryId}`);
-      console.log(res.data.data.category.product)
+      console.log(res.data.data.category)
       setCategory(res.data.data.category)
       setProductsInCategory(res.data.data.category.product)
       setOtherProducts(res.data.data.otherProducts)
@@ -71,11 +73,26 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
   }, [params]);
 
 
+  const handleDeleteCategory = useCallback(async (categoryId:string) => {
+    if (!confirm("Are you sure you want to delete this category?")) return
+    setIsDeleting(true)
+    try {
+      const res = await axios.delete(`/api/Category/delete?id=${categoryId}`);
+      console.log(res.data);
+      if(res.status === 200){
+        window.location.href = `/dashboard/categories/`
+        // refresh()
+      }
+    } catch (error) {
+      console.error("Error deleting category:", error);
+    }
+  }, [categoryId]);
+
   
   if (isLoading) {
     return (
       <div className="text-center flex justify-center py-10 text-gray-600">
-        <Loader2 className="h-5 w-5 animate-spin"/>loading....
+        <Loader2 className="animate-spin"/>loading....
       </div>
     );
   }
@@ -104,7 +121,12 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex flex-col items-start gap-4">
           <Link href="/dashboard/categories">
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              disabled={isDeleting}
+              onClick={()=> (window.location.href = `/dashboard/categories/`)} 
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Categories
             </Button>
@@ -117,19 +139,29 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Link href={`/dashboard/categories/edit/${category.id}`}>
-            <Button variant="outline" size="sm">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Category
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            size="sm"
+            disabled={isDeleting}
+            onClick={()=> (window.location.href = `/dashboard/categories/edit/${category.id}`)} 
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Category
+          </Button>
           <Button
             variant="outline"
             size="sm"
+            onClick={()=> handleDeleteCategory(category?.id)}
+            disabled={isDeleting}
             className="text-red-600 hover:text-red-700 bg-transparent"
           >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            {
+              isDeleting ? <Loader2 className=" animate-spin"/> :
+              <>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Category
+              </>
+            }
           </Button>
         </div>
       </div>
@@ -188,7 +220,7 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
                 onOpenChange={setIsAddProductDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                  <Button size="sm" disabled={isDeleting} className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product
                   </Button>
@@ -205,7 +237,7 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
                   {productsInCategory.map((product) => (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                      className={`${isDeleting ? "pointer-events-none opacity-50" : ""} flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors`}
                     >
                       <div className="flex items-center space-x-4">
                         <img
@@ -254,19 +286,21 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Link href={`/dashboard/categories/edit/${category.id}`}>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 mb-3">
+                <Button 
+                  disabled={isDeleting}
+                  onClick={()=> (window.location.href = `/dashboard/categories/edit/${category.id}`)} 
+                  className="w-full bg-blue-600 hover:bg-blue-700 mb-3 cursor-pointer"
+                >
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Category
                 </Button>
-              </Link>
 
               <Dialog
                 open={isAddProductDialogOpen}
                 onOpenChange={setIsAddProductDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full bg-transparent">
+                  <Button variant="outline" disabled={isDeleting} className="w-full bg-transparent cursor-pointer">
                     <Package className="mr-2 h-4 w-4" />
                     Add Product
                   </Button>
@@ -276,11 +310,17 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
 
               <Button
                 variant="outline"
-                className="w-full text-red-600 hover:text-red-700 bg-transparent"
-               // onClick={handleDeleteCategory()}
+                className="w-full text-red-600 hover:text-red-700 bg-transparent cursor-pointer"
+                onClick={()=> handleDeleteCategory(category?.id)}
+                disabled={isDeleting}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Category
+                {
+                  isDeleting ? <Loader2 className=" animate-spin"/> :
+                  <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Category
+                  </>
+                }
               </Button>
             </CardContent>
           </Card>
