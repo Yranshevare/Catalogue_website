@@ -52,7 +52,6 @@ export default function EditProductPage({params,}: ProductPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [categories, setCategories] = useState([]);
-  const [isDeletingImg, setIsDeletingImg] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
 
@@ -135,13 +134,6 @@ export default function EditProductPage({params,}: ProductPageProps) {
   };
 
   const removeImage = async(index: number) => {
-    setIsDeletingImg(true)   
-
-    // if(!images[index].file) {
-    //   const res = await axios.delete(`/api/product/deleteImg?url=${images[index].preview}`);
-    //   console.log(res)
-    // }
-
     
     setImages((prev) => {
       if (prev[index].file) {
@@ -150,34 +142,17 @@ export default function EditProductPage({params,}: ProductPageProps) {
       }
       return prev.filter((_, i) => i !== index);
     });
-
-    
-
-    setIsDeletingImg(false)
   };
 
   const removeAllImages = useCallback(async() => {
-    if(images.length < 1) return
-
-    setIsDeletingImg(true)
-
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-
     await Promise.all(images.map(async(img) => {
       if (img.file) {
         console.log("Revoke URL:", img.preview);
         URL.revokeObjectURL(img.preview);
       }
-      // if(!img.file){
-      //   console.log("delete form cloudinary:",img.preview);
-      //   const res = await axios.delete(`/api/product/deleteImg?url=${img.preview}`);
-      //   console.log(res)
-      // }
     }))
-
     setImages([])
-    
-    setIsDeletingImg(false)
+  
   },[images]) 
 
   const handleSubmit = async(e: React.FormEvent) => {
@@ -258,7 +233,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className={` flex flex-col items-start gap-4`}>
-        <Link href={`/dashboard/products/${id}`} className={`${isDeletingImg || isSaving && "pointer-events-none opacity-50"}`}>
+        <Link href={`/dashboard/products/${id}`} className={`${ isSaving && "pointer-events-none opacity-50"}`}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Product
@@ -423,7 +398,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
                 <CardTitle>Product Images</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className={`${isDeletingImg && "opacity-50 "} border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors`}>
+                <div className={` border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors`}>
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
                   <div className="mt-4">
                     <Label htmlFor="images" className="cursor-pointer">
@@ -436,7 +411,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
                         multiple
                         accept="image/*"
                         className="hidden"
-                        disabled={isDeletingImg}
+                        disabled={isSaving}
                         onChange={handleImageUpload}
                       />
                     </Label>
@@ -454,11 +429,11 @@ export default function EditProductPage({params,}: ProductPageProps) {
                         variant="outline"
                         size="sm"
                         onClick={removeAllImages}
-                        disabled={isDeletingImg}
+                        disabled={isSaving}
                         className="text-red-600 hover:text-red-700"
                       >
                         {
-                          isDeletingImg ? <Loader2 className=" animate-spin"/> : " Clear All"
+                          isSaving ? <Loader2 className=" animate-spin"/> : " Clear All"
                         }
                        
                       </Button>
@@ -490,7 +465,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
                                   type="button"
                                   variant="ghost"
                                   size="sm"
-                                  disabled={isDeletingImg}
+                                  disabled={isSaving}
                                   onClick={() => {
                                     const newImages = [...images]
                                     const [movedImage] = newImages.splice(index, 1)
@@ -507,7 +482,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                disabled={isDeletingImg}
+                                disabled={isSaving}
                                 onClick={() => removeImage(index)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700"
                               >
@@ -536,7 +511,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
                   <Button 
                     type="submit" 
                     className="w-full bg-blue-600 hover:bg-blue-700"
-                    disabled={isDeletingImg || isSaving }
+                    disabled={ isSaving }
                   >
                     {
                       isSaving ? <Loader2 className=" animate-spin"/> : "Save Changes"
@@ -547,7 +522,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
                       type="button" 
                         variant="outline" 
                         className="w-full bg-transparent"
-                        disabled={isDeletingImg || isSaving}
+                        disabled={ isSaving}
                         onClick={()=>router.push(`/dashboard/products/${id}`)}
                       >
                       Cancel

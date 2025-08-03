@@ -115,10 +115,13 @@ export default function AddProducts({category, otherProducts,setIsAddProductDial
                           checked={selectedProductsToAdd.includes(
                             product.id
                           )}
+                          onClick={() =>
+                            handleSelectProductToAdd(product.id)
+                          }
                           onChange={() =>
                             handleSelectProductToAdd(product.id)
                           }
-                          className="form-checkbox h-4 w-4 text-blue-600 rounded"
+                          className="form-checkbox h-4 w-4 cursor-pointer text-blue-600 rounded"
                         />
                         <img
                           src={product.primaryImage || "/placeholder.svg"}

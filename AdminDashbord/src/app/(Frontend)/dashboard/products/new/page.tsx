@@ -158,7 +158,7 @@ export default function NewProductPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col items-start gap-4">
-        <Link href="/dashboard/products">
+        <Link href="/dashboard/products" className={`${isSubmitting ? "pointer-events-none" : ""}`}>
           <Button variant="ghost" size="sm" className="cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Products
@@ -173,7 +173,7 @@ export default function NewProductPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Information */}
           <div className="lg:col-span-2 space-y-6">
-            <Card>
+            <Card className={`${isSubmitting ? "pointer-events-none" : ""}`}>
               <CardHeader>
                 <CardTitle>Product Information</CardTitle>
               </CardHeader>
@@ -229,7 +229,7 @@ export default function NewProductPage() {
             </Card>
 
             {/* Specifications */}
-            <Card>
+            <Card className={`${isSubmitting ? "pointer-events-none" : ""}`}>
               <CardHeader>
                 <CardTitle>Product Specifications</CardTitle>
               </CardHeader>
@@ -298,7 +298,7 @@ export default function NewProductPage() {
             </Card>
 
             {/* Pricing & Inventory */}
-            <Card>
+            <Card className={`${isSubmitting ? "pointer-events-none" : ""}`}>
               <CardHeader>
                 <CardTitle>Pricing & Discount</CardTitle>
               </CardHeader>
@@ -340,7 +340,7 @@ export default function NewProductPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Product Images */}
-            <Card>
+            <Card className={`${isSubmitting ? "pointer-events-none" : ""}`}>
               <CardHeader>
                 <CardTitle>Product Images</CardTitle>
               </CardHeader>
