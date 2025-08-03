@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { refresh } from '@/app/(Frontend)/dashboard/products/refreshDashbord';
 
 
 
@@ -61,6 +62,7 @@ export default function AddProducts({category, otherProducts,setIsAddProductDial
             console.log(res)
             if(res.status === 200) {
                 fetchData()
+                await refresh()
                 setIsAddProductDialogOpen(false);
                 setSelectedProductsToAdd([]);
                 setProductSearchTerm("");
@@ -166,7 +168,7 @@ export default function AddProducts({category, otherProducts,setIsAddProductDial
                   variant="outline"
                   className="w-full bg-transparent"
                   disabled={isLoading}
-                  onClick={() => (window.location.href = "/dashboard/products/new")}
+                  onClick={() => (window.location.href = "/dashboard/products/new?categoryId=" + category.id)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Create New Product

@@ -11,61 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { promise } from "zod";
+import { refresh } from "../../../products/refreshDashbord";
 
-// Mock category data (same as in category detail page, but as an array for lookup)
-const mockCategories = [
-  {
-    id: "1",
-    name: "Construction Materials",
-    description:
-      "Materials used in construction and building projects, including steel, cement, and timber.",
-    productCount: 45,
-    status: "Active",
-    createdAt: "2024-01-15",
-    updatedAt: "2024-07-20",
-  },
-  {
-    id: "2",
-    name: "Hardware",
-    description:
-      "Bolts, screws, nuts, washers, and other small hardware items essential for assembly and fastening.",
-    productCount: 78,
-    status: "Active",
-    createdAt: "2024-01-10",
-    updatedAt: "2024-07-18",
-  },
-  {
-    id: "3",
-    name: "Safety Equipment",
-    description:
-      "Personal protective equipment (PPE) and safety gear for industrial environments, such as helmets, gloves, and safety glasses.",
-    productCount: 32,
-    status: "Active",
-    createdAt: "2024-01-08",
-    updatedAt: "2024-07-19",
-  },
-  {
-    id: "4",
-    name: "Welding Supplies",
-    description:
-      "Equipment and consumables for welding processes, including electrodes, welding machines, and protective gear.",
-    productCount: 25,
-    status: "Active",
-    createdAt: "2024-01-05",
-    updatedAt: "2024-07-17",
-  },
-  {
-    id: "5",
-    name: "Machinery",
-    description:
-      "Industrial machinery and heavy equipment used in manufacturing and construction.",
-    productCount: 12,
-    status: "Active",
-    createdAt: "2024-01-03",
-    updatedAt: "2024-07-15",
-  },
-];
 
 
 interface ProductPageProps {
@@ -130,6 +77,7 @@ export default function EditCategoryPage({params,}: ProductPageProps) {
       const res = await axios.post(`/api/Category/update/`, {formData, id});
       console.log(res.data)
       if(res.status === 200){
+        await refresh()
         router.push(`/dashboard/categories/${id}`);
       }
     } catch (error) {

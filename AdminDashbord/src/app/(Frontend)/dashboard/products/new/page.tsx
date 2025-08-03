@@ -22,27 +22,7 @@ import {useForm} from 'react-hook-form'
 import addImageToLocalServer from "@/lib/localImg";
 import { refresh } from "../refreshDashbord";
 
-const categories = [
-  "Construction Materials",
-  "Hardware",
-  "Safety Equipment",
-  "Welding Supplies",
-  "Machinery",
-  "Tools",
-  "Electrical",
-  "Plumbing",
-];
 
-const mockCategories = [
-  { id: "1", name: "Construction Materials" },
-  { id: "2", name: "Hardware" },
-  { id: "3", name: "Safety Equipment" },
-  { id: "4", name: "Welding Supplies" },
-  { id: "5", name: "Machinery" },
-  { id: "6", name: "Tools" },
-  { id: "7", name: "Electrical" },
-  { id: "8", name: "Plumbing" },
-];
 
 export default function NewProductPage() {
   const searchParams = useSearchParams();
@@ -87,17 +67,23 @@ export default function NewProductPage() {
   useEffect(() => {
     fetchData();
   }, []);
+  
 
   useEffect(() => {
     if (preselectedCategoryId) {
-      const categoryName = mockCategories.find(
-        (cat) => cat.id === preselectedCategoryId
-      )?.name;
-      if (categoryName) {
-        setFormData((prev) => ({ ...prev, category: categoryName }));
+      const categoryName:any = categories.find(
+        (cat:any) => cat.id === preselectedCategoryId
+      );
+      if (categoryName && formData.category !== categoryName.categoryName) {
+        // console.log(categoryName);
+        setFormData((prev) => ({ ...prev, category: categoryName.categoryName }));
       }
     }
-  }, [preselectedCategoryId]);
+  }, [categories,formData]);
+
+  useEffect(()=>{
+    console.log(formData)
+  },[formData])
 
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -228,7 +214,7 @@ export default function NewProductPage() {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                      <SelectValue placeholder="Select a category"  />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category:any, index) => (

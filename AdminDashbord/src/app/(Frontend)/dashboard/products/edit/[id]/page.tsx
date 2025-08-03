@@ -1,6 +1,6 @@
 "use client";
 
-import type React from "react";
+import  React, { useCallback } from "react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,69 +15,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Upload, X } from "lucide-react";
+import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import addImageToLocalServer from "@/lib/localImg";
+import { refresh } from "../../refreshDashbord";
 
-const categories = [
-  "Construction Materials",
-  "Hardware",
-  "Safety Equipment",
-  "Welding Supplies",
-  "Machinery",
-  "Tools",
-  "Electrical",
-  "Plumbing",
-];
 
-// Mock product data (same as in product detail page, but as an array for lookup)
-const mockProducts = [
-  {
-    id: "1",
-    name: "Industrial Steel Pipes",
-    sku: "ISP-001",
-    description:
-      "High-quality industrial steel pipes suitable for construction and plumbing applications. These pipes are manufactured using premium grade steel and undergo rigorous quality testing to ensure durability and reliability.",
-    category: "Construction Materials",
-    price: 45.99,
-    stock: 150,
-    minStock: 50,
-    status: "Active",
-    createdAt: "2024-01-15",
-    updatedAt: "2024-01-20",
-    images: [
-      "/placeholder.svg?height=400&width=400&text=Steel+Pipe+1",
-      "/placeholder.svg?height=400&width=400&text=Steel+Pipe+2",
-      "/placeholder.svg?height=400&width=400&text=Steel+Pipe+3",
-      "/placeholder.svg?height=400&width=400&text=Steel+Pipe+4",
-    ],
-    specifications: {
-      material: "High-grade Steel",
-      dimensions: "50cm x 10cm diameter",
-      weight: "2.5 kg per piece",
-      other: "Galvanized finish, suitable for outdoor use",
-    },
-  },
-  // Add more mock products here if needed for testing different IDs
-];
 
-export default function EditProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+interface ProductPageProps {
+  params: Promise<{ id: string }>; // params is a Promise
+}
+
+export default function EditProductPage({params,}: ProductPageProps) {
   const router = useRouter();
-  const productId = params.id;
-
+  const {id} = React.use(params);
+  // const productId = "1";
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     description: "",
     category: "",
     price: "",
-    stock: "",
-    minStock: "",
+    Discount: "",
     isActive: true,
   });
   const [images, setImages] = useState<
@@ -91,74 +50,71 @@ export default function EditProductPage({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [isDeletingImg, setIsDeletingImg] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
 
   useEffect(() => {
-    // Simulate fetching product data
-    const productToEdit = mockProducts.find((p) => p.id === productId);
+    console.log(id)
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`/api/product/getOne?id=${id}`)
+        const response = await axios.get("/api/Category/getName");
+        console.log(response.data.data);
+        setCategories(response.data.data);
+        console.log(res.data.data.products)
+        const data = res.data.data.products
+        setFormData(
+          {
+            name: data.productName,
+            description: data.description,
+            category: data.category,
+            price: data.price.toString(),
+            Discount: data.discount.toString(),
+            isActive: data.status === "Active",
+          }
+        )
 
-    if (productToEdit) {
-      setFormData({
-        name: productToEdit.name,
-        sku: productToEdit.sku,
-        description: productToEdit.description,
-        category: productToEdit.category,
-        price: productToEdit.price.toString(),
-        stock: productToEdit.stock.toString(),
-        minStock: productToEdit.minStock.toString(),
-        isActive: productToEdit.status === "Active",
-      });
-      // For images, we'll just use the preview URLs for existing images
-      setImages(
-        productToEdit.images.map((imgUrl, index) => ({
+        setSpecifications({
+          material: data.material,
+          dimensions: data.size,
+          weight: data.weight,
+          other: data.otherSpecification,
+        })
+
+        const primaryImage = [
+          {
+            preview: data.primaryImage,
+            name: `Existing Image 1`,
+            size: 0,
+          },
+        ] 
+
+        const existingImages = data.images.map((imgUrl:any, index: number) => ({
           preview: imgUrl,
           name: `Existing Image ${index + 1}`,
           size: 0, // Size is unknown for mock existing images
         }))
-      );
-      setSpecifications(productToEdit.specifications);
-      setLoading(false);
-    } else {
-      setError("Product not found.");
-      setLoading(false);
+        setImages([...primaryImage, ...existingImages])
+
+        setImages(
+          [primaryImage,
+          existingImages].flat()
+        )
+
+        setName(data.productName)
+      } catch (err) {
+        console.error("Failed to fetch product", err)
+        setError("Product not found.");
+        // setError("Unable to fetch product data.")
+      }finally{
+        setLoading(false)
+      }
     }
-  }, [productId]);
-
-  /*useEffect(() => {
-  const fetchProduct = async () => {
-    try {
-      const response = await axios.get(`/api/products/${productId}`)
-      const product = response.data
-
-      setFormData({
-        name: product.name,
-        sku: product.sku,
-        description: product.description,
-        category: product.category,
-        price: product.price.toString(),
-        stock: product.stock.toString(),
-        minStock: product.minStock.toString(),
-        isActive: product.status === "Active",
-      })
-
-      setImages(
-        product.images.map((imgUrl: string, index: number) => ({
-          preview: imgUrl,
-          name: `Existing Image ${index + 1}`,
-          size: 0,
-        }))
-      )
-
-      setSpecifications(product.specifications)
-      setLoading(false)
-    } catch (err) {
-      console.error("Error fetching product:", err)
-      setError("Failed to load product.")
-      setLoading(false)
-    }
-  }
-
-  fetchProduct()
-}, [productId])*/
+    fetchProduct()
+  }, []);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -178,20 +134,57 @@ export default function EditProductPage({
     e.target.value = "";
   };
 
-  const removeImage = (index: number) => {
+  const removeImage = async(index: number) => {
+    setIsDeletingImg(true)   
+
+    // if(!images[index].file) {
+    //   const res = await axios.delete(`/api/product/deleteImg?url=${images[index].preview}`);
+    //   console.log(res)
+    // }
+
+    
     setImages((prev) => {
-      // Revoke URL only if it's a newly uploaded image (has a file object)
       if (prev[index].file) {
+        console.log("Revoke URL:", prev[index].preview);
         URL.revokeObjectURL(prev[index].preview);
       }
       return prev.filter((_, i) => i !== index);
     });
+
+    
+
+    setIsDeletingImg(false)
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const removeAllImages = useCallback(async() => {
+    if(images.length < 1) return
+
+    setIsDeletingImg(true)
+
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    await Promise.all(images.map(async(img) => {
+      if (img.file) {
+        console.log("Revoke URL:", img.preview);
+        URL.revokeObjectURL(img.preview);
+      }
+      // if(!img.file){
+      //   console.log("delete form cloudinary:",img.preview);
+      //   const res = await axios.delete(`/api/product/deleteImg?url=${img.preview}`);
+      //   console.log(res)
+      // }
+    }))
+
+    setImages([])
+    
+    setIsDeletingImg(false)
+  },[images]) 
+
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
+    setIsSaving(true)
     // In a real application, you would send this data to your backend to update the product
-    console.log("Updating product:", productId);
+    console.log("Updating product:", id);
     console.log("Form data:", formData);
     console.log(
       "Images (newly uploaded files and existing image URLs):",
@@ -199,45 +192,55 @@ export default function EditProductPage({
     );
     console.log("Specifications:", specifications);
 
+    try {
+      let image:string[] = []
+      await Promise.all(images.map(async(img,index) => {
+        if  (img.file) {
+          console.log("Uploading image:", img.file);
+          let path = await addImageToLocalServer(img.file) as string
+          image[index] = path
+        }else{
+          image[index] = img.preview
+        }
+      }))
+      console.log(image)
+
+
+      const values = {
+        id:id,
+        productName:formData.name,
+        images:image.slice(1),
+        primaryImage:image[0],
+        category:formData.category,
+        description:formData.description,
+        price:formData.price,
+        material:specifications.material,
+        size:specifications.dimensions,
+        weight:specifications.weight,
+        discount:formData.Discount,
+        otherSpecification:specifications.other,
+      }
+      console.log(values)
+
+      const res = await axios.post("/api/product/update", values);
+
+      if (res.status === 200) {
+        console.log(res.data);
+        await refresh()
+        router.push(`/dashboard/products/${id}`);
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      setError("Failed to update product.");
+      
+    }finally{
+      setIsSaving(false)
+    }
+
     // Simulate successful update and redirect
-    router.push(`/dashboard/products/${productId}`);
+    // router.push(`/dashboard/products/${productId}`);
   };
 
-  /*const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
-
-  try {
-    const form = new FormData()
-    form.append("name", formData.name)
-    form.append("sku", formData.sku)
-    form.append("description", formData.description)
-    form.append("category", formData.category)
-    form.append("price", formData.price)
-    form.append("stock", formData.stock)
-    form.append("minStock", formData.minStock)
-    form.append("status", formData.isActive ? "Active" : "Inactive")
-
-    form.append("specifications", JSON.stringify(specifications))
-
-    // Only upload new files (images with file)
-    images.forEach((img) => {
-      if (img.file) {
-        form.append("images", img.file)
-      }
-    })
-
-    await axios.put(`/api/products/${productId}`, form, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-
-    router.push(`/dashboard/products/${productId}`)
-  } catch (err) {
-    console.error("Error updating product:", err)
-    alert("Failed to update product.")
-  }
-}*/
 
   if (loading) {
     return (
@@ -254,8 +257,8 @@ export default function EditProductPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href={`/dashboard/products/${productId}`}>
+      <div className={` flex flex-col items-start gap-4`}>
+        <Link href={`/dashboard/products/${id}`} className={`${isDeletingImg || isSaving && "pointer-events-none opacity-50"}`}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Product
@@ -264,7 +267,7 @@ export default function EditProductPage({
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Product</h1>
           <p className="text-gray-600">
-            Modify product details for {formData.name}
+            Modify product details for {name}
           </p>
         </div>
       </div>
@@ -273,12 +276,12 @@ export default function EditProductPage({
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Information */}
           <div className="lg:col-span-2 space-y-6">
-            <Card>
+            <Card className={`${isSaving && "pointer-events-none opacity-50"}`}>
               <CardHeader>
                 <CardTitle>Product Information</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 ">
                   <div className="space-y-2">
                     <Label htmlFor="name">Product Name *</Label>
                     <Input
@@ -291,16 +294,7 @@ export default function EditProductPage({
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="sku">SKU *</Label>
-                    <Input
-                      id="sku"
-                      value={formData.sku}
-                      onChange={(e) => handleInputChange("sku", e.target.value)}
-                      placeholder="e.g., ISP-001"
-                      required
-                    />
-                  </div>
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
@@ -326,9 +320,9 @@ export default function EditProductPage({
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                      {categories.map((category:any) => (
+                        <SelectItem key={category.id} value={category.categoryName}>
+                          {category.categoryName}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -338,7 +332,7 @@ export default function EditProductPage({
             </Card>
 
             {/* Specifications */}
-            <Card>
+            <Card className={`${isSaving && "pointer-events-none opacity-50"}`}>
               <CardHeader>
                 <CardTitle>Product Specifications</CardTitle>
               </CardHeader>
@@ -354,7 +348,7 @@ export default function EditProductPage({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dimensions">Dimensions</Label>
+                    <Label htmlFor="dimensions">Size</Label>
                     <Input
                       id="dimensions"
                       value={specifications.dimensions}
@@ -387,14 +381,14 @@ export default function EditProductPage({
             </Card>
 
             {/* Pricing & Inventory */}
-            <Card>
+            <Card className={`${isSaving && "pointer-events-none opacity-50"}`}> 
               <CardHeader>
-                <CardTitle>Pricing & Inventory</CardTitle>
+                <CardTitle>Pricing & Discount</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price ($) *</Label>
+                    <Label htmlFor="price">Price (Rs) *</Label>
                     <Input
                       id="price"
                       type="number"
@@ -405,24 +399,14 @@ export default function EditProductPage({
                       required
                     />
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="stock">Stock Quantity *</Label>
+                    <Label htmlFor="minStock">Discount</Label>
                     <Input
-                      id="stock"
-                      type="number"
-                      value={formData.stock}
-                      onChange={(e) => handleInputChange("stock", e.target.value)}
-                      placeholder="0"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="minStock">Minimum Stock</Label>
-                    <Input
-                      id="minStock"
-                      type="number"
-                      value={formData.minStock}
-                      onChange={(e) => handleInputChange("minStock", e.target.value)}
+                      id="Discount"
+                      type="text"
+                      value={formData.Discount}
+                      onChange={(e) => handleInputChange("Discount", e.target.value)}
                       placeholder="0"
                     />
                   </div>
@@ -434,16 +418,16 @@ export default function EditProductPage({
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Product Images */}
-            <Card>
+            <Card className={`${isSaving && "pointer-events-none opacity-50"}`}>
               <CardHeader>
                 <CardTitle>Product Images</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                <div className={`${isDeletingImg && "opacity-50 "} border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors`}>
                   <Upload className="mx-auto h-12 w-12 text-gray-400" />
                   <div className="mt-4">
                     <Label htmlFor="images" className="cursor-pointer">
-                      <span className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                      <span className="text-sm text-center w-full font-medium text-blue-600 hover:text-blue-500">
                         {images.length === 0 ? "Upload product images" : "Add more images"}
                       </span>
                       <Input
@@ -452,6 +436,7 @@ export default function EditProductPage({
                         multiple
                         accept="image/*"
                         className="hidden"
+                        disabled={isDeletingImg}
                         onChange={handleImageUpload}
                       />
                     </Label>
@@ -468,15 +453,19 @@ export default function EditProductPage({
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => setImages([])}
+                        onClick={removeAllImages}
+                        disabled={isDeletingImg}
                         className="text-red-600 hover:text-red-700"
                       >
-                        Clear All
+                        {
+                          isDeletingImg ? <Loader2 className=" animate-spin"/> : " Clear All"
+                        }
+                       
                       </Button>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 max-h-64 overflow-y-auto">
-                      {images.map((image, index) => (
+                      {images.map((image:any, index:number) => (
                         <div key={index} className="relative group border rounded-lg p-2 hover:bg-gray-50">
                           <div className="flex items-center space-x-3">
                             <img
@@ -485,7 +474,7 @@ export default function EditProductPage({
                               className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                             />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">{image.name}</p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{image.name || ""}</p>
                               <p className="text-xs text-gray-500">
                                 {image.size ? (image.size / 1024 / 1024).toFixed(2) + " MB" : "Existing"}
                               </p>
@@ -501,6 +490,7 @@ export default function EditProductPage({
                                   type="button"
                                   variant="ghost"
                                   size="sm"
+                                  disabled={isDeletingImg}
                                   onClick={() => {
                                     const newImages = [...images]
                                     const [movedImage] = newImages.splice(index, 1)
@@ -517,6 +507,7 @@ export default function EditProductPage({
                                 type="button"
                                 variant="ghost"
                                 size="sm"
+                                disabled={isDeletingImg}
                                 onClick={() => removeImage(index)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-700"
                               >
@@ -536,38 +527,31 @@ export default function EditProductPage({
               </CardContent>
             </Card>
 
-            {/* Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="isActive">Active Product</Label>
-                    <p className="text-sm text-gray-500">Product will be visible in catalog</p>
-                  </div>
-                  <Switch
-                    id="isActive"
-                    checked={formData.isActive}
-                    onCheckedChange={(checked) => handleInputChange("isActive", checked)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            
 
             {/* Actions */}
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-3">
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                    Save Changes
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={isDeletingImg || isSaving }
+                  >
+                    {
+                      isSaving ? <Loader2 className=" animate-spin"/> : "Save Changes"
+                    }
+                    
                   </Button>
-                  <Link href={`/dashboard/products/${productId}`} className="block">
-                    <Button type="button" variant="outline" className="w-full bg-transparent">
+                    <Button 
+                      type="button" 
+                        variant="outline" 
+                        className="w-full bg-transparent"
+                        disabled={isDeletingImg || isSaving}
+                        onClick={()=>router.push(`/dashboard/products/${id}`)}
+                      >
                       Cancel
                     </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>

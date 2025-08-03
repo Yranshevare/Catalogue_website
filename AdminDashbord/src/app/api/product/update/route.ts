@@ -1,5 +1,7 @@
+import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru"
 import prisma from "@/lib/prisma"
 import response from "@/lib/response"
+import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
 import { NextRequest } from "next/server"
 
 type DataType = {
@@ -37,15 +39,49 @@ export async function POST(req:NextRequest){
             }
         })       
         
+        let pImage:any = data.primaryImage
+        if(!pImage.startsWith("http")){    // for not uploaded image
+            const data:any = await uploadOnCloudinary(pImage)
+            pImage = data.url 
+        }
+
         
+
+        let image:any = data.images
+        await Promise.all(image.map(async(img:any,index:number) => {
+            if(!img.startsWith("http")){    // for not uploaded image
+                let imgData:any = await uploadOnCloudinary(img)
+                image[index] = imgData.url 
+            }
+        }))
+
+        const pro:any = await prisma.product.findUnique({
+            where:{
+                id:data.id
+            }
+        })
+
+        const newImages = [pImage,...image]
+        const oldImages = [pro?.primaryImage,...pro?.images]
+        //find old images that are not in new images
+        const deletedImages = oldImages.filter((img:any) => !newImages.includes(img))
+
+        await Promise.all(deletedImages.map(async(img:any) => {
+            if(img.startsWith("http")){    // for not uploaded image
+                const res = await deleteCloudinaryImage(img)
+                console.log("deleting image from cloudinary",img)
+            }
+        }))
+        
+        // console.log(image,pImage)
         const product = await prisma.product.update({
             where:{
                 id:data.id
             },
             data:{
                 productName:data.productName,
-                images:data.images,
-                primaryImage:data.primaryImage,
+                images:image,
+                primaryImage:pImage,
                 category:category?.categoryName,
                 description:data.description,
                 price:data.price,

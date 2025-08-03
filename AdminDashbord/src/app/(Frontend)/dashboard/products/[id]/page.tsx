@@ -92,8 +92,8 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
       const res = await axios.delete(`/api/product/remove?id=${id}`)
       console.log(res.data)
       if(res.status == 200){
+        await refresh()
         window.location.href = "/dashboard/products"
-        refresh()
       }
     } catch (err) {
       console.error("Failed to delete product", err)
@@ -134,7 +134,7 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
               Back to Products
             </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{product.productName}</h1>
           </div>
         </div>
         <div className="flex gap-2">
