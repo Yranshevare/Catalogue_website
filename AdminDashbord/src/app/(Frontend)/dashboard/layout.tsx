@@ -6,13 +6,14 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-import { BarChart3, Factory, Home, LogOut, Menu, Package, Settings, Tag } from "lucide-react"
+import { BarChart3, Factory, Home, LogOut, Menu, Package, Settings, Tag , BellRing} from "lucide-react"
 import axios from "axios";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Products", href: "/dashboard/products", icon: Package },
   { name: "Categories", href: "/dashboard/categories", icon: Tag },
+  { name: "Notifications", href: "/dashboard/notifications", icon: BellRing },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
@@ -91,7 +92,7 @@ const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
 
 
   return (
-    <div className="min-h-screen w-full flex bg-gray-50">
+    <div className="flex flex-col min-h-screen w-full bg-gray-50">
         {/* Desktop Sidebar */}
         <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r">
             <Sidebar />
