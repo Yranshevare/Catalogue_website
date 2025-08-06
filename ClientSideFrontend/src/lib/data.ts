@@ -130,3 +130,21 @@ export const mockProducts: Product[] = [
 ]
 
 export const categories = ["All", "Electronics", "Wearables", "Furniture", "Gaming", "Lifestyle"]
+
+
+/*
+import axios from "axios"
+import type { Product } from "./types"
+
+
+
+export async function fetchProducts(): Promise<Product[]> {
+  const res = await axios.get(`api/products`)
+  return res.data
+}
+
+export async function fetchProductById(id: string): Promise<Product> {
+  const res = await axios.get(`api/products/${id}`)
+  return res.data
+}
+*/ 

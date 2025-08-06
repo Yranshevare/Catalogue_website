@@ -16,12 +16,21 @@ class CartStore {
       this.items = JSON.parse(stored)
     }
   }
+  /*private async loadFromBackend() {
+  const res = await axios.get("https://api/cart")
+  this.items = res.data
+  }
+  */
 
   private saveToStorage() {
     if (typeof window !== "undefined") {
       localStorage.setItem("cart", JSON.stringify(this.items))
     }
   }
+  /*private async saveToBackend() {
+  await axios.post("https://api/cart", this.items)
+  }
+  */
 
   private notify() {
     this.listeners.forEach((listener) => listener())
