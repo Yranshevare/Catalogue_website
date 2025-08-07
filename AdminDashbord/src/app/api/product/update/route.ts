@@ -1,6 +1,7 @@
 import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru"
 import prisma from "@/lib/prisma"
 import response from "@/lib/response"
+import { refreshProduct } from "@/lib/revaldate"
 import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
 import { NextRequest } from "next/server"
 
@@ -92,6 +93,9 @@ export async function POST(req:NextRequest){
                 otherSpecification:data.otherSpecification
             }
         })
+        if(pro.productName !== data.productName || pro.primaryImage !== data.primaryImage || pro.category !== data.category || pro.price !== data.price){
+            await refreshProduct()
+        }
         
         return response({
             message:"product added successfully",

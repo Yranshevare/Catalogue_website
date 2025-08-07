@@ -10,5 +10,18 @@ export const fetchDashboardData = unstable_cache(
     return res.data;
   },
   [], // no params
+  { tags: ["Dashboard"] }
+);
+
+export const fetchProductData = unstable_cache(
+  async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/product/getAll"); // use full URL
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  },
+  [], // no params
   { tags: ["product"] }
 );

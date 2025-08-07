@@ -3,7 +3,6 @@ import axios from "axios";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
@@ -11,42 +10,14 @@ import {
   Trash2,
   Package,
   DollarSign,
-  Warehouse,
   Calendar,
   Eye,
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import { set } from "zod";
-import { refresh } from "../refreshDashbord";
+import { refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
-// Mock product data - in a real app, this would come from your database
-const productData = {
-  id: "1", // Changed to string for consistency with URL params
-  name: "Industrial Steel Pipes",
-  sku: "ISP-001",
-  description:
-    "High-quality industrial steel pipes suitable for construction and plumbing applications. These pipes are manufactured using premium grade steel and undergo rigorous quality testing to ensure durability and reliability.",
-  category: "Construction Materials",
-  price: 45.99,
-  stock: 150,
-  minStock: 50,
-  status: "Active",
-  createdAt: "2024-01-15",
-  updatedAt: "2024-01-20",
-  images: [
-    "/placeholder.svg?height=400&width=400&text=Steel+Pipe+1",
-    "/placeholder.svg?height=400&width=400&text=Steel+Pipe+2",
-    "/placeholder.svg?height=400&width=400&text=Steel+Pipe+3",
-    "/placeholder.svg?height=400&width=400&text=Steel+Pipe+4",
-  ],
-  specifications: {
-    material: "High-grade Steel",
-    dimensions: "50cm x 10cm diameter",
-    weight: "2.5 kg per piece",
-    other: "Galvanized finish, suitable for outdoor use",
-  },
-};
+
 
 interface ProductPageProps {
   params: Promise<{ id: string }>; // params is a Promise
@@ -92,7 +63,8 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
       const res = await axios.delete(`/api/product/remove?id=${id}`)
       console.log(res.data)
       if(res.status == 200){
-        await refresh()
+        await refreshDashboard()
+        await refreshProduct()
         window.location.href = "/dashboard/products"
       }
     } catch (err) {

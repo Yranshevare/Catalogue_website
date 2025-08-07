@@ -19,7 +19,7 @@ import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import addImageToLocalServer from "@/lib/localImg";
-import { refresh } from "../../refreshDashbord";
+import { refreshDashboard, refreshProduct } from "../../../../../../lib/revaldate";
 
 
 
@@ -201,7 +201,7 @@ export default function EditProductPage({params,}: ProductPageProps) {
 
       if (res.status === 200) {
         console.log(res.data);
-        await refresh()
+        await refreshDashboard()
         router.push(`/dashboard/products/${id}`);
       }
     } catch (error) {

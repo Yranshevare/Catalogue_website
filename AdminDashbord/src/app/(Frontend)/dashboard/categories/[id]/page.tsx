@@ -21,7 +21,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import AddProducts from "@/components/category/AddProducts";
 import React from "react";
-import { refresh } from "../../products/refreshDashbord";
+import { refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
 
 
@@ -82,7 +82,8 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
       const res = await axios.delete(`/api/Category/delete?id=${categoryId}`);
       console.log(res.data);
       if(res.status === 200){
-        await refresh()
+        await refreshDashboard()
+        await refreshProduct()
         window.location.href = `/dashboard/categories/`
         // refresh()
       }

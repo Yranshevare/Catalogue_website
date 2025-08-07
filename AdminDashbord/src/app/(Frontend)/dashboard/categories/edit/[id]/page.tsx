@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { refresh } from "../../../products/refreshDashbord";
+import {  refreshDashboard, refreshProduct } from "../../../../../../lib/revaldate";
 
 
 
@@ -77,7 +77,7 @@ export default function EditCategoryPage({params,}: ProductPageProps) {
       const res = await axios.post(`/api/Category/update/`, {formData, id});
       console.log(res.data)
       if(res.status === 200){
-        await refresh()
+        await refreshDashboard()
         router.push(`/dashboard/categories/${id}`);
       }
     } catch (error) {

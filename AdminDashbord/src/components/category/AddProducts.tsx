@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { refresh } from '@/app/(Frontend)/dashboard/products/refreshDashbord';
+import { refreshDashboard, refreshProduct } from '@/lib/revaldate';
 
 
 
@@ -62,7 +62,8 @@ export default function AddProducts({category, otherProducts,setIsAddProductDial
             console.log(res)
             if(res.status === 200) {
                 fetchData()
-                await refresh()
+                await refreshDashboard()
+                await refreshProduct()
                 setIsAddProductDialogOpen(false);
                 setSelectedProductsToAdd([]);
                 setProductSearchTerm("");

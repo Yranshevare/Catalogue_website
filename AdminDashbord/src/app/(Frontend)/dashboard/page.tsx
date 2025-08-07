@@ -24,7 +24,7 @@ import Link from "next/link";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import AddCategoryForm from "@/components/category/addCategoryForm";
-import { fetchDashboardData } from "./fetchData";
+import { fetchDashboardData } from "../../../lib/fetchData";
 import { set } from "zod";
 
 // Mock data

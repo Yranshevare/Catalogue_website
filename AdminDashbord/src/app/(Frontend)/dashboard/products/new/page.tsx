@@ -20,7 +20,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
 import addImageToLocalServer from "@/lib/localImg";
-import { refresh } from "../refreshDashbord";
+import {  refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
 
 
@@ -141,7 +141,8 @@ export default function NewProductPage() {
     try {
       const res = await axios.post("/api/product/add", values);
       console.log(res)
-      await refresh()
+      await refreshDashboard()
+      await refreshProduct()
     } catch (error:any) {
       alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
     }

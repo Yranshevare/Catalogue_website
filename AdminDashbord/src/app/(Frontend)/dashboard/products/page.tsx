@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { fetchProductData } from "@/lib/fetchData";
 
 // Mock data
 const products = [
@@ -102,13 +103,11 @@ export default function ProductsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await axios.get("/api/product/getAll");
+      const response = await fetchProductData();
       console.log(response.data);
-      if (response.status === 200){
-        setProducts(response.data.data.products);
-        setAvailableCategory(response.data.data.category)
+        setProducts(response.data.products);
+        setAvailableCategory(response.data.category)
         setIsLoading(false);
-      }
 
     } catch (error) {
       console.error("Error fetching products:", error);
