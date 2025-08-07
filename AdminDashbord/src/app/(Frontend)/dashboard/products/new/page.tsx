@@ -20,7 +20,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
 import addImageToLocalServer from "@/lib/localImg";
-import {  refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
+import {  refreshCategory, refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
 
 
@@ -143,6 +143,7 @@ export default function NewProductPage() {
       console.log(res)
       await refreshDashboard()
       await refreshProduct()
+      await refreshCategory()
     } catch (error:any) {
       alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
     }

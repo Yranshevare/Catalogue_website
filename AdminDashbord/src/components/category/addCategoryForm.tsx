@@ -17,6 +17,7 @@ import { Input } from '../ui/input';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { Textarea } from '../ui/textarea';
+import { refreshCategory } from '@/lib/revaldate';
 
 export default function AddCategoryForm({loadCategory}:any) {
     const {register, handleSubmit,formState: { errors,isSubmitting }, setError} = useForm();
@@ -28,6 +29,9 @@ export default function AddCategoryForm({loadCategory}:any) {
         try {
           const res = await axios.post("/api/Category/create", data);
           console.log(res)
+          if(res.status === 200){
+            await refreshCategory()
+          }
           if (loadCategory) loadCategory()
         } catch (error:any) {
           alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);

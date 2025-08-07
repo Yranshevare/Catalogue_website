@@ -25,3 +25,16 @@ export const fetchProductData = unstable_cache(
   [], // no params
   { tags: ["product"] }
 );
+
+export const fetchCategoryData = unstable_cache(
+  async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/Category/getAll"); // use full URL
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  },
+  [], // no params
+  { tags: ["category"] }
+);

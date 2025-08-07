@@ -1,7 +1,7 @@
 import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru"
 import prisma from "@/lib/prisma"
 import response from "@/lib/response"
-import { refreshProduct } from "@/lib/revaldate"
+import { refreshCategory, refreshProduct } from "@/lib/revaldate"
 import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
 import { NextRequest } from "next/server"
 
@@ -95,6 +95,9 @@ export async function POST(req:NextRequest){
         })
         if(pro.productName !== data.productName || pro.primaryImage !== data.primaryImage || pro.category !== data.category || pro.price !== data.price){
             await refreshProduct()
+        }
+        if(pro.category !== data.category){
+            await refreshCategory()
         }
         
         return response({

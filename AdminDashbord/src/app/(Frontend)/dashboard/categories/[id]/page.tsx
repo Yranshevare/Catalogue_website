@@ -21,7 +21,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import AddProducts from "@/components/category/AddProducts";
 import React from "react";
-import { refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
+import { refreshCategory, refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
 
 
@@ -84,6 +84,7 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
       if(res.status === 200){
         await refreshDashboard()
         await refreshProduct()
+        await refreshCategory()
         window.location.href = `/dashboard/categories/`
         // refresh()
       }

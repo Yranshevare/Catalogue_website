@@ -23,6 +23,7 @@ import Link from "next/link";
 import AddCategoryForm from "@/components/category/addCategoryForm";
 import { useEffect, useState } from "react";
 import { set } from "zod";
+import { fetchCategoryData } from "@/lib/fetchData";
 
 
 
@@ -36,10 +37,14 @@ export default  function CategoriesPage() {
 
 
   const loadCategory = async() => {
-    const category = await axios.get("/api/Category/getAll");
-    console.log(category);
-    setCategories(category.data.data )
-    setLoading(false)
+    try {
+      const category = await fetchCategoryData();
+      console.log(category);
+      setCategories(category.data)
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   useEffect(() => {

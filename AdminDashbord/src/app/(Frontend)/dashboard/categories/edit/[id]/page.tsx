@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import {  refreshDashboard, refreshProduct } from "../../../../../../lib/revaldate";
+import {  refreshCategory, refreshDashboard, refreshProduct } from "../../../../../../lib/revaldate";
 
 
 
@@ -78,6 +78,7 @@ export default function EditCategoryPage({params,}: ProductPageProps) {
       console.log(res.data)
       if(res.status === 200){
         await refreshDashboard()
+        await refreshCategory()
         router.push(`/dashboard/categories/${id}`);
       }
     } catch (error) {

@@ -15,7 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import { refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
+import { refreshCategory, refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
 
 
@@ -65,6 +65,7 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
       if(res.status == 200){
         await refreshDashboard()
         await refreshProduct()
+        await refreshCategory()
         window.location.href = "/dashboard/products"
       }
     } catch (err) {
