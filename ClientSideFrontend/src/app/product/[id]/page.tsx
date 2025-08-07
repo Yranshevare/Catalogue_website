@@ -148,7 +148,7 @@ export default function ProductDetailPage() {
             {product.description}
           </p>
           {/* Product Specifications */}
-          <Card>
+          <Card className="gap-0 py-0">
             <CardContent className="p-4">
               <h3 className="font-semibold mb-3">Product Specifications</h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -234,12 +234,12 @@ export default function ProductDetailPage() {
           {/* Action Buttons */}
           <div className="space-y-3">
             <div className="flex gap-3">
-              <Button onClick={handleAddToCart} className="flex-1">
+              <Button onClick={handleAddToCart} className="flex-1 px-4 py-2">
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Add {quantity} to Cart
               </Button>
               <BookingDialog product={product}>
-                <Button variant="outline" className="flex-1 bg-transparent">
+                <Button variant="outline" className="flex-1 bg-transparent px-4 py-2">
                   <Package className="h-4 w-4 mr-2" />
                   Book Now
                 </Button>

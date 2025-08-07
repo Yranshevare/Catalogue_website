@@ -70,7 +70,7 @@ export default function CartPage() {
             const itemTotal = discountedPrice * item.quantity
 
             return (
-              <Card key={item.id}>
+              <Card className="py-0" key={item.id}>
                 <CardContent className="p-6">
                   <div className="flex gap-4">
                     <div className="relative w-24 h-24 rounded-lg overflow-hidden border">
@@ -141,7 +141,7 @@ export default function CartPage() {
         <div className="lg:col-span-1">
           <Card className="sticky top-4">
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle className="text-2xl font-semibold leading-none tracking-tight">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Detailed Product List */}
