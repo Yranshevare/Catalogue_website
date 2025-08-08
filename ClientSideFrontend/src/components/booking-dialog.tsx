@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Product } from "@/lib/types"
+import axios from "axios"
 
 interface BookingDialogProps {
   product: Product
@@ -32,7 +33,7 @@ export function BookingDialog({ product, children }: BookingDialogProps){
     quantity: 1,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
 
     // Here you would typically send the booking data to your backend
@@ -41,15 +42,38 @@ export function BookingDialog({ product, children }: BookingDialogProps){
       productId: product.id,
       productName: product.productName,
     })
+    try {
+      const data = {
+        fromName: formData.customerName,
+        fromPhone: formData.contactInfo,
+        fromAddress: formData.address,
+        totalPrice: totalPrice.toFixed(2),
+        products:[
+          {
+            productId: product.id,
+            quantity: formData.quantity,
+            price: product.price
+          }
+        ]
+      }
+      const res = await axios.post("/api/notification/create", data)
+      console.log(res)
+
+      console.log(data)
+    } catch (error:any) {
+      console.log(error.message)
+    }finally{
+      setOpen(false)
+      setFormData({
+        customerName: "",
+        contactInfo: "",
+        address: "",
+        quantity: 1,
+      })
+    }
 
 
-    setOpen(false)
-    setFormData({
-      customerName: "",
-      contactInfo: "",
-      address: "",
-      quantity: 1,
-    })
+
   }
 
   const originalPrice = Number.parseFloat(product.price)

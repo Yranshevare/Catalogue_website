@@ -51,11 +51,15 @@ model Notification {
   fromPhone   String
   fromAddress String
   products    ProductItem[] // array of embedded objects
+  totalPrice String? @default("0")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 type ProductItem {
   productId String @db.ObjectId  // reference to Product's _id
   quantity  Int
+  price String
 }
 
 

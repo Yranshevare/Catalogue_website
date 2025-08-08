@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import type { CartItem } from "@/lib/types";
+import axios from "axios";
 
 interface CartBookingDialogProps {
   cartItems: CartItem[];
@@ -35,7 +36,7 @@ export function CartBookingDialog({
     address: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Here you would typically send the booking data to your backend
@@ -51,12 +52,35 @@ export function CartBookingDialog({
       totalAmount: totalPrice,
     })
 
-    setOpen(false)
-    setFormData({
-      customerName: "",
-      contactInfo: "",
-      address: "",
-    })
+    try {
+      const data = {
+        fromName: formData.customerName,
+        fromPhone: formData.contactInfo,
+        fromAddress: formData.address,
+        products: cartItems.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        totalPrice: String(totalPrice),
+      }
+      console.log(data)
+
+      const res = await axios.post("/api/notification/create", data)
+      console.log(res)
+      
+    } catch (error:any) {
+      console.log(error.message)
+    }finally{
+      setOpen(false)
+      setFormData({
+        customerName: "",
+        contactInfo: "",
+        address: "",
+      })
+    }
+
+
   }
 
   return(
