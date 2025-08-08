@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-import { BarChart3, Factory, Home, LogOut, Menu, Package, Settings, Tag , BellRing} from "lucide-react"
+import {  Factory, Home, LogOut, Menu, Package, Settings, Tag , BellRing} from "lucide-react"
 import axios from "axios";
 
 const navigation = [
@@ -14,7 +14,6 @@ const navigation = [
   { name: "Products", href: "/dashboard/products", icon: Package },
   { name: "Categories", href: "/dashboard/categories", icon: Tag },
   { name: "Notifications", href: "/dashboard/notifications", icon: BellRing },
-  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
