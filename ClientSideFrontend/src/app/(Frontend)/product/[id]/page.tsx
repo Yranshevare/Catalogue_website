@@ -21,7 +21,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { BookingDialog } from "@/components/booking-dialog";
 import { useCart } from "@/hooks/use-cart";
-import { mockProducts } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
@@ -35,7 +34,6 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const { addItem } = useCart();
-  console.log(params)
   
 
   async function loadProduct(){
@@ -86,6 +84,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     addItem(product, quantity);
+    alert(`${quantity} x ${product.productName} has been added to your cart.`)
   };
 
 
