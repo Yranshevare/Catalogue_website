@@ -111,9 +111,7 @@ export function CartBookingDialog({
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {cartItems.map((item) => {
                   const originalPrice = Number.parseFloat(item.price)
-                  const discount = Number.parseFloat(item.discount || "0")
-                  const discountedPrice = originalPrice * (1 - discount / 100)
-                  const itemTotal = discountedPrice * item.quantity
+                  const itemTotal = originalPrice * item.quantity
 
                   return (
                     <div key={item.id} className="flex justify-between items-start text-sm border-b pb-2">
@@ -122,18 +120,12 @@ export function CartBookingDialog({
                         <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                           <span>Qty: {item.quantity}</span>
                           <span>•</span>
-                          <span>${discountedPrice.toFixed(2)} each</span>
-                          {discount > 0 && (
-                            <>
-                              <span>•</span>
-                              <span className="line-through">${originalPrice.toFixed(2)}</span>
-                            </>
-                          )}
+                          <span>Rs {originalPrice.toFixed(2)} each</span>
+                        
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${itemTotal.toFixed(2)}</p>
-                        {discount > 0 && <p className="text-xs text-green-600">-{discount}% off</p>}
+                        <p className="font-semibold">Rs {itemTotal.toFixed(2)}</p>
                       </div>
                     </div>
                   )
@@ -146,7 +138,7 @@ export function CartBookingDialog({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>Rs {totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
@@ -154,12 +146,12 @@ export function CartBookingDialog({
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax</span>
-                  <span>$0.00</span>
+                  <span>Rs 0.00</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total Amount</span>
-                  <span className="text-primary">${totalPrice.toFixed(2)}</span>
+                  <span className="text-primary">Rs {totalPrice.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground text-center mt-2">Payment will be collected on delivery</p>
               </div>
@@ -167,7 +159,7 @@ export function CartBookingDialog({
           </div>
           <DialogFooter>
             <Button type="submit" className="w-full" size="lg">
-              Confirm Order - ${totalPrice.toFixed(2)}
+              Confirm Order :- Rs {totalPrice.toFixed(2)}
             </Button>
           </DialogFooter>
         </form>

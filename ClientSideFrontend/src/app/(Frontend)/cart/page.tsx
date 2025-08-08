@@ -65,9 +65,9 @@ export default function CartPage() {
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => {
             const originalPrice = Number.parseFloat(item.price)
-            const discount = Number.parseFloat(item.discount || "0")
-            const discountedPrice = originalPrice * (1 - discount / 100)
-            const itemTotal = discountedPrice * item.quantity
+            // const discount = Number.parseFloat(item.discount || "0")
+            // const discountedPrice = originalPrice * (1 - discount / 100)
+            const itemTotal = originalPrice * item.quantity
 
             return (
               <Card className="py-0" key={item.id}>
@@ -84,7 +84,7 @@ export default function CartPage() {
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-semibold text-lg">{item.productName}</h3>
+                          <h3  className="font-semibold text-lg">{item.productName}</h3>
                           {item.category && <p className="text-sm text-muted-foreground">{item.category}</p>}
                         </div>
                         <Button
@@ -99,12 +99,12 @@ export default function CartPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <span className="font-bold">${discountedPrice.toFixed(2)}</span>
-                          {discount > 0 && (
+                          <span className="font-bold">Rs {originalPrice.toFixed(2)}</span>
+                          {/* {discount > 0 && (
                             <span className="text-sm text-muted-foreground line-through">
                               ${originalPrice.toFixed(2)}
                             </span>
-                          )}
+                          )} */}
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -127,7 +127,7 @@ export default function CartPage() {
                       </div>
 
                       <div className="mt-2 text-right">
-                        <span className="font-semibold">Total: ${itemTotal.toFixed(2)}</span>
+                        <span className="font-semibold">Total: Rs {itemTotal.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ export default function CartPage() {
                     const originalPrice = Number.parseFloat(item.price)
                     const discount = Number.parseFloat(item.discount || "0")
                     const discountedPrice = originalPrice * (1 - discount / 100)
-                    const itemTotal = discountedPrice * item.quantity
+                    const itemTotal = originalPrice * item.quantity
 
                     return (
                       <div key={item.id} className="flex justify-between items-start text-sm border-b pb-2">
@@ -161,17 +161,17 @@ export default function CartPage() {
                           <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
                             <span>Qty: {item.quantity}</span>
                             <span>×</span>
-                            <span>${discountedPrice.toFixed(2)}</span>
-                            {discount > 0 && (
+                            <span>Rs {originalPrice.toFixed(2)}</span>
+                            {/* {discount > 0 && (
                               <>
                                 <span className="line-through text-red-500">${originalPrice.toFixed(2)}</span>
                                 <span className="text-green-600">(-{discount}%)</span>
                               </>
-                            )}
+                            )} */}
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">${itemTotal.toFixed(2)}</p>
+                          <p className="font-semibold">Rs {itemTotal.toFixed(2)}</p>
                         </div>
                       </div>
                     )
@@ -184,7 +184,7 @@ export default function CartPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>Rs {totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
@@ -192,12 +192,12 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax</span>
-                  <span>$0.00</span>
+                  <span>Rs 0.00</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span className="text-primary">${totalPrice.toFixed(2)}</span>
+                  <span className="text-primary">Rs {totalPrice.toFixed(2)}</span>
                 </div>
               </div>
               <div className="space-y-2">

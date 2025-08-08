@@ -37,10 +37,10 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
         <CardFooter className="p-4 pt-0">
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold">${discountedPrice.toFixed(2)}</span>
-            {discount > 0 && (
+            <span className="text-lg font-bold">Rs {originalPrice.toFixed(2)}</span>
+            {/* {discount > 0 && (
               <span className="text-sm text-muted-foreground line-through">${originalPrice.toFixed(2)}</span>
-            )}
+            )} */}
           </div>
         </CardFooter>
       </Card>

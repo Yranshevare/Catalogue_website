@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import {
@@ -12,6 +12,7 @@ import {
   Star,
   Minus,
   Plus,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,14 +24,49 @@ import { useCart } from "@/hooks/use-cart";
 import { mockProducts } from "@/lib/data";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
+import { Product } from "@/lib/types";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.id as string;
-  const product = mockProducts.find((p) => p.id === productId);
+  const [product, setProduct] = useState<Product | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const { addItem } = useCart();
+  console.log(params)
+  
+
+  async function loadProduct(){
+    try {
+      const res = await axios.get(`/api/product/getOne?id=${productId}`)
+      console.log(res.data.data.products)
+      const pro = res.data.data.products
+      pro.images = [pro.primaryImage,...pro.images]
+      setProduct(pro)
+    } catch (error) {
+      console.log(error)
+    }finally{
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadProduct();
+  }, []);
+
+
+  if(isLoading){
+    return (
+      <div className="container w-full   mx-auto px-4 py-8">
+        <div className="flex h-[80vh] items-center justify-center" >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <h1 className="">Loading...</h1>
+        </div>
+      </div>
+    )
+  }
 
   if (!product) {
     return (
@@ -51,6 +87,8 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     addItem(product, quantity);
   };
+
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -120,27 +158,26 @@ export default function ProductDetailPage() {
                   />
                 ))}
               </div>
-              <span className="text-sm text-muted-foreground">
+              {/* <span className="text-sm text-muted-foreground">
                 (4.0) 128 reviews
-              </span>
+              </span> */}
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center space-x-3">
               <span className="text-3xl font-bold">
-                ${discountedPrice.toFixed(2)}
+                Rs {originalPrice.toFixed(2)}
               </span>
-              {discount > 0 && (
+              {/* {discount > 0 && (
                 <span className="text-xl text-muted-foreground line-through">
                   ${originalPrice.toFixed(2)}
                 </span>
-              )}
+              )} */}
             </div>
-            {discount > 0 && (
+            {product.discount  && (
               <p className="text-sm text-green-600 font-medium">
-                You save ${(originalPrice - discountedPrice).toFixed(2)} (
-                {discount}% off)
+                {product.discount}
               </p>
             )}
           </div>
@@ -172,7 +209,7 @@ export default function ProductDetailPage() {
                 )}
                 {product.otherSpecification && (
                   <div className="col-span-2">
-                    <span className="text-muted-foreground">Features:</span>
+                    <span className="text-muted-foreground">Other:</span>
                     <span className="ml-2 font-medium">
                       {product.otherSpecification}
                     </span>
@@ -214,19 +251,19 @@ export default function ProductDetailPage() {
             <div className="bg-muted/50 p-4 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Total Price:</span>
-                <span className="text-2xl font-bold text-primary">${(discountedPrice * quantity).toFixed(2)}</span>
+                <span className="text-2xl font-bold text-primary">Rs {(originalPrice * quantity).toFixed(2)}</span>
               </div>
-              {discount > 0 && (
+              {/* {discount > 0 && (
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-xs text-muted-foreground">Original Total:</span>
                   <span className="text-sm text-muted-foreground line-through">
                     ${(originalPrice * quantity).toFixed(2)}
                   </span>
                 </div>
-              )}
+              )} */}
               <div className="flex justify-between items-center mt-1">
                 <span className="text-xs text-muted-foreground">Price per item:</span>
-                <span className="text-sm font-medium">${discountedPrice.toFixed(2)}</span>
+                <span className="text-sm font-medium">Rs {originalPrice.toFixed(2)}</span>
               </div>
             </div>
           </div>

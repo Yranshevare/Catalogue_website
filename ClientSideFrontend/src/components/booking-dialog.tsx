@@ -53,9 +53,9 @@ export function BookingDialog({ product, children }: BookingDialogProps){
   }
 
   const originalPrice = Number.parseFloat(product.price)
-  const discount = Number.parseFloat(product.discount || "0")
-  const discountedPrice = originalPrice * (1 - discount / 100)
-  const totalPrice = discountedPrice * formData.quantity
+  // const discount = Number.parseFloat(product.discount || "0")
+  // const discountedPrice = originalPrice * (1 - discount / 100)
+  const totalPrice = originalPrice * formData.quantity
 
   return(
      <Dialog open={open} onOpenChange={setOpen}>
