@@ -17,6 +17,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import type { CartItem } from "@/lib/types";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/hooks/use-cart";
 
 interface CartBookingDialogProps {
   cartItems: CartItem[];
@@ -24,17 +27,19 @@ interface CartBookingDialogProps {
   children: React.ReactNode;
 }
 
-export function CartBookingDialog({
-  cartItems,
-  totalPrice,
-  children,
-}: CartBookingDialogProps) {
+export function CartBookingDialog({cartItems,totalPrice,children,}: CartBookingDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     customerName: "",
     contactInfo: "",
     address: "",
   });
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const router = useRouter();
+
+    const { clearCart } = useCart()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +57,7 @@ export function CartBookingDialog({
       totalAmount: totalPrice,
     })
 
+    setSubmitting(true)
     try {
       const data = {
         fromName: formData.customerName,
@@ -68,6 +74,10 @@ export function CartBookingDialog({
 
       const res = await axios.post("/api/notification/create", data)
       console.log(res)
+      if(res.status ===200){
+        alert("Order Placed Successfully, Thank You For Shopping With Us")
+        clearCart()
+      }
       
     } catch (error:any) {
       console.log(error.message)
@@ -78,13 +88,14 @@ export function CartBookingDialog({
         contactInfo: "",
         address: "",
       })
+      setSubmitting(false)
     }
 
 
   }
 
   return(
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={submitting ? undefined : setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -182,8 +193,14 @@ export function CartBookingDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="w-full" size="lg">
-              Confirm Order :- Rs {totalPrice.toFixed(2)}
+            <Button type="submit" disabled={submitting} style={submitting ? { opacity: 0.5 } : {  }} className="w-full" size="lg">
+              {
+                submitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ):
+                `Confirm Order :- Rs {${totalPrice.toFixed(2)}}`
+                
+              }
             </Button>
           </DialogFooter>
         </form>
