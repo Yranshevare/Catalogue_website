@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface ProductOrder {
   productId: string;
@@ -49,6 +49,7 @@ export default function OrderDetailPage() {
   const orderId = params.id as string;
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
 
 
 
@@ -81,14 +82,26 @@ export default function OrderDetailPage() {
   
   
 
-  const handleConfirmOrder = () => {
-    if (order) {
-      // In a real application, you would send an API request to update the order status
-      setOrder((prevOrder) =>
-        prevOrder ? { ...prevOrder, status: "Confirmed" } : null
-      );
-      // Optionally, navigate back or show a success message
-      // router.push("/dashboard/notifications");
+  const handleConfirmOrder =async (id:string) => {
+    if (!order) return 
+
+    try {
+      setDeleteLoading(true)
+      const response:any = await axios.put(`/api/notification/confirm?id=${id}`);
+      console.log(response.data)
+      if(response.status === 200){
+        setOrder((prev:any)=>{
+          return {
+            ...prev,
+            status:"ACCEPTED"
+          }
+        })
+      }
+      // setOrder(response.data); // update with confirmed status
+    } catch (error) {
+      console.error("Failed to confirm order:", error);
+    }finally{
+      setDeleteLoading(false)
     }
   };
 
@@ -102,6 +115,21 @@ export default function OrderDetailPage() {
       console.error("Failed to confirm order:", error);
     }
   };*/
+
+  const deleteProduct = async(id:String)=> {
+    if (!order) return 
+    try {
+      setDeleteLoading(true)
+      await axios.delete(`/api/notification/delete?id=${id}`)
+      router.push("/dashboard/notifications")
+    } catch (error:any) {
+      console.log(error.message)
+    }
+    finally{
+      setDeleteLoading(false)
+    }
+
+  }
 
   if (!order) {
     return (
@@ -164,8 +192,8 @@ export default function OrderDetailPage() {
                 </TableHeader>
                 <TableBody>
                   {order.products.map((product) => (
-                    <TableRow key={product.productId}>
-                      <TableCell className="font-medium">
+                    <TableRow key={product.productId} onClick={()=>{router.push(`/dashboard/products/${product.productId}`)}} className="cursor-pointer">
+                      <TableCell  className="font-medium ">
                         {product.productName}
                       </TableCell>
                       <TableCell className="text-center">
@@ -192,13 +220,32 @@ export default function OrderDetailPage() {
             </div>
           </div>
           <Separator />
-          {order.status.toLowerCase() === "pending" && (
-            <div className="flex justify-end">
-              <Button onClick={handleConfirmOrder} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              disabled={deleteLoading} 
+              onClick={() => deleteProduct(order.id)} 
+              className="mx-1 text-red-600 cursor-pointer hover:text-red-700 bg-transparent"
+              style={deleteLoading ? { pointerEvents: "none", opacity: 0.5} : {}}
+              >
+              {
+                <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Product
+                </>
+              }
+            </Button>
+            {order.status.toLowerCase() === "pending" && (
+              <Button 
+                onClick={()=> handleConfirmOrder(order.id)} 
+                className="mx-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={deleteLoading}
+                style={deleteLoading ? { pointerEvents: "none", opacity: 0.5} : {}}
+              >
                 Confirm Order
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
