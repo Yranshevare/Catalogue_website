@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,9 +22,10 @@ import axios from "axios"
 interface BookingDialogProps {
   product: Product
   children: React.ReactNode
+  Quantity: number
 }
 
-export function BookingDialog({ product, children }: BookingDialogProps){
+export function BookingDialog({ product, children,Quantity }: BookingDialogProps){
     const [open, setOpen] = useState(false)
   const [formData, setFormData] = useState({
     customerName: "",
@@ -32,6 +33,13 @@ export function BookingDialog({ product, children }: BookingDialogProps){
     address: "",
     quantity: 1,
   })
+
+  useEffect(() => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      quantity: Quantity,
+    }))
+  }, [Quantity])
 
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
@@ -127,9 +135,9 @@ export function BookingDialog({ product, children }: BookingDialogProps){
               <Input
                 id="quantity"
                 type="number"
-                min="1"
-                value={formData.quantity}
-                onChange={(e) => setFormData((prev) => ({ ...prev, quantity: Number.parseInt(e.target.value) || 1 }))}
+                min="0"
+                value={formData.quantity === 0 ? "" : formData.quantity}
+                onChange={(e) => setFormData((prev) => ({ ...prev, quantity: Number.parseInt(e.target.value) || 0 }))}
                 required
               />
             </div>
@@ -142,9 +150,12 @@ export function BookingDialog({ product, children }: BookingDialogProps){
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="w-full">
+            <div className="w-full flex flex-col items-center justify-center">
+              <Button type="submit" className="w-full">
               Confirm Booking
             </Button>
+            <p className="text-[12px] text-center text-[#acacac] mt-2">NOTE: If you are eligible for any discount it will be conducted at the time of delivery</p>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

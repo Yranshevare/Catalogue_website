@@ -1,4 +1,5 @@
 import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru";
+import { verifyRefreshToken } from "@/lib/handleToken";
 import prisma from "@/lib/prisma";
 import response from "@/lib/response";
 import { NextRequest } from "next/server";
@@ -16,6 +17,11 @@ export async function DELETE(req:NextRequest) {
         if(!req.cookies.get("refreshToken")){    // for already logged in user
             return response({error:"unauthorize access",status:400})
         }
+
+        if(!verifyRefreshToken(req.cookies.get("refreshToken")?.value as string)){    // for already logged in user
+            return response({message:"unauthorize access",status:400})
+        }
+
         const product = await prisma.product.findUnique({
             where:{
                 id:id

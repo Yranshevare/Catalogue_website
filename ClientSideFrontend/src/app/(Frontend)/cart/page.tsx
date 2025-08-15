@@ -45,7 +45,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto sm:px-4 py-8">
       <div className="mb-6">
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -99,7 +99,7 @@ export default function CartPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <span className="font-bold">Rs {originalPrice.toFixed(2)}</span>
+                          <span className="font-bold max-[415px]:text-sm">Rs {originalPrice.toFixed(2)}</span>
                           {/* {discount > 0 && (
                             <span className="text-sm text-muted-foreground line-through">
                               ${originalPrice.toFixed(2)}

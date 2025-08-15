@@ -1,3 +1,4 @@
+import { verifyRefreshToken } from "@/lib/handleToken"
 import prisma from "@/lib/prisma"
 import response from "@/lib/response"
 import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
@@ -20,6 +21,14 @@ type DataType = {
 
 export async function POST(req:NextRequest){
     try {
+
+        if(!req.cookies.get("refreshToken")){    // for already logged in user
+            return response({error:"unauthorize access",status:400})
+        }
+
+        if(!verifyRefreshToken(req.cookies.get("refreshToken")?.value as string)){    // for already logged in user
+            return response({message:"unauthorize access",status:400})
+        }
 
         const data:DataType = await req.json()
 

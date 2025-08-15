@@ -90,7 +90,7 @@ export default function ProductDetailPage() {
 
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto sm:px-4 py-8">
       <Link
         href="/"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-6"
@@ -98,21 +98,21 @@ export default function ProductDetailPage() {
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Products
       </Link>
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-8 ">
         {/* Product Images */}
-        <div className="space-y-4">
+        <div className="space-y-4 ">
           <div className="aspect-square relative overflow-hidden rounded-lg border">
             <Image
               src={product.images[selectedImageIndex] || "/placeholder.svg"}
               alt={product.productName}
               fill
-              className="object-cover"
+              className="object-cover "
             />
-            {discount > 0 && (
+            {/* {discount > 0 && (
               <Badge className="absolute top-4 left-4 bg-red-500 hover:bg-red-600">
                 -{discount}% OFF
               </Badge>
-            )}
+            )} */}
           </div>
           <div className="flex gap-2 overflow-x-auto">
             {product.images.map((image, index) => (
@@ -274,7 +274,7 @@ export default function ProductDetailPage() {
                 <ShoppingCart className="h-4 w-4 mr-2" />
                 Add {quantity} to Cart
               </Button>
-              <BookingDialog product={product}>
+              <BookingDialog product={product} Quantity={quantity}>
                 <Button variant="outline" className="flex-1 bg-transparent px-4 py-2">
                   <Package className="h-4 w-4 mr-2" />
                   Book Now

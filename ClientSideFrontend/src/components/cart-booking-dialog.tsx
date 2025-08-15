@@ -193,15 +193,18 @@ export function CartBookingDialog({cartItems,totalPrice,children,}: CartBookingD
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={submitting} style={submitting ? { opacity: 0.5 } : {  }} className="w-full" size="lg">
-              {
-                submitting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ):
-                `Confirm Order :- Rs {${totalPrice.toFixed(2)}}`
-                
-              }
-            </Button>
+            <div className="w-full flex flex-col items-center justify-center">
+              <Button type="submit" disabled={submitting} style={submitting ? { opacity: 0.5 } : {  }} className="w-full" size="lg">
+                {
+                  submitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ):
+                  `Confirm Order :- Rs ${totalPrice.toFixed(2)}`
+
+                }
+              </Button>
+              <p className="text-[12px] text-center text-[#acacac] mt-2">NOTE: If you are eligible for any discount it will be conducted at the time of delivery</p>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
