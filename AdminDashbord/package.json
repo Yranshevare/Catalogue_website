@@ -42,6 +42,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.4",
+    "eslint-formatter-codeframe": "^7.32.1",
+    "eslint-formatter-unix": "^8.40.0",
     "prisma": "^6.13.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.6",
