@@ -32,6 +32,7 @@ export async function GET(req:NextRequest){
 
 
         if(req.cookies.get("refreshToken")){    // for already logged in user
+            
             return response({
                 message:"user is already logged in",
                 status:200
@@ -45,6 +46,7 @@ export async function GET(req:NextRequest){
             message:"login request success",
             status:200
         })
+
 
         res.cookies.set("refreshToken",refreshToken,{httpOnly:true,secure:true}) // setting up the cookies to create the session
 

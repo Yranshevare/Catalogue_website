@@ -21,96 +21,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Loader2, Trash2 } from "lucide-react";
 
 interface ProductOrder {
   productId: string;
   productName: string;
   quantity: number;
-  pricePerUnit: number;
+  price: string;
 }
 
 interface Order {
   id: string;
-  customerName: string;
-  contactNumber: string;
-  address: string;
+  fromName: string;
+  fromPhone: string;
+  fromAddress: string;
   products: ProductOrder[];
   totalPrice: number;
   status: "Pending" | "Confirmed";
-  orderDate: Date;
+  createdAt: Date;
 }
 
-const mockOrders: Order[] = [
-  {
-    id: "ORD001",
-    customerName: "Alice Smith",
-    contactNumber: "123-456-7890",
-    address: "123 Main St, Anytown, USA",
-    products: [
-      {
-        productId: "PROD001",
-        productName: "Widget A",
-        quantity: 2,
-        pricePerUnit: 10.5,
-      },
-      {
-        productId: "PROD003",
-        productName: "Gadget C",
-        quantity: 1,
-        pricePerUnit: 25.0,
-      },
-    ],
-    totalPrice: 46.0,
-    status: "Pending",
-    orderDate: new Date("2025-07-30T10:00:00Z"),
-  },
-  {
-    id: "ORD002",
-    customerName: "Bob Johnson",
-    contactNumber: "098-765-4321",
-    address: "456 Oak Ave, Otherville, USA",
-    products: [
-      {
-        productId: "PROD002",
-        productName: "Thing B",
-        quantity: 5,
-        pricePerUnit: 5.75,
-      },
-    ],
-    totalPrice: 28.75,
-    status: "Confirmed",
-    orderDate: new Date("2025-07-29T14:30:00Z"),
-  },
-  {
-    id: "ORD003",
-    customerName: "Charlie Brown",
-    contactNumber: "555-123-4567",
-    address: "789 Pine Ln, Somewhere, USA",
-    products: [
-      {
-        productId: "PROD001",
-        productName: "Widget A",
-        quantity: 1,
-        pricePerUnit: 10.5,
-      },
-      {
-        productId: "PROD002",
-        productName: "Thing B",
-        quantity: 3,
-        pricePerUnit: 5.75,
-      },
-      {
-        productId: "PROD003",
-        productName: "Gadget C",
-        quantity: 2,
-        pricePerUnit: 25.0,
-      },
-    ],
-    totalPrice: 87.75,
-    status: "Pending",
-    orderDate: new Date("2025-07-31T09:15:00Z"),
-  },
-];
+
     
 export default function OrderDetailPage() {
   const params = useParams();
@@ -118,23 +49,16 @@ export default function OrderDetailPage() {
   const orderId = params.id as string;
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+
+
 
   useEffect(() => {
-    // In a real application, you would fetch order data from an API here
-    const foundOrder = mockOrders.find((o) => o.id === orderId);
-    if (foundOrder) {
-      setOrder(foundOrder);
-    } else {
-      // Handle case where order is not found, e.g., redirect to 404 or notifications list
-      router.push("/dashboard/notifications");
-    }
-  }, [orderId, router]);
-
-  /*useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const response = await axios.get(`/api/orders/${orderId}`);
-        setOrder(response.data);
+        const response = await axios.get(`/api/notification/getAll?id=${orderId}`);
+        console.log(response.data.data.notification)
+        setOrder(response.data.data.notification);
       } catch (error) {
         console.error("Failed to fetch order:", error);
         router.push("/dashboard/notifications"); // fallback
@@ -147,23 +71,37 @@ export default function OrderDetailPage() {
   }, [orderId, router]);
   
   if (loading) {
+
+
   return (
-    <div className="flex items-center justify-center h-64">
-      <p>Loading order details...</p>
-    </div>
-  )
+      <div className="flex items-center justify-center h-64">
+        <p className="flex items-center"><Loader2 className="animate-spin mr-2"/>Loading order details...</p>
+      </div>
+    )
   }
   
-  */
+  
 
-  const handleConfirmOrder = () => {
-    if (order) {
-      // In a real application, you would send an API request to update the order status
-      setOrder((prevOrder) =>
-        prevOrder ? { ...prevOrder, status: "Confirmed" } : null
-      );
-      // Optionally, navigate back or show a success message
-      // router.push("/dashboard/notifications");
+  const handleConfirmOrder =async (id:string) => {
+    if (!order) return 
+
+    try {
+      setDeleteLoading(true)
+      const response:any = await axios.put(`/api/notification/confirm?id=${id}`);
+      console.log(response.data)
+      if(response.status === 200){
+        setOrder((prev:any)=>{
+          return {
+            ...prev,
+            status:"ACCEPTED"
+          }
+        })
+      }
+      // setOrder(response.data); // update with confirmed status
+    } catch (error) {
+      console.error("Failed to confirm order:", error);
+    }finally{
+      setDeleteLoading(false)
     }
   };
 
@@ -177,6 +115,21 @@ export default function OrderDetailPage() {
       console.error("Failed to confirm order:", error);
     }
   };*/
+
+  const deleteProduct = async(id:String)=> {
+    if (!order) return 
+    try {
+      setDeleteLoading(true)
+      await axios.delete(`/api/notification/delete?id=${id}`)
+      router.push("/dashboard/notifications")
+    } catch (error:any) {
+      console.log(error.message)
+    }
+    finally{
+      setDeleteLoading(false)
+    }
+
+  }
 
   if (!order) {
     return (
@@ -193,10 +146,10 @@ export default function OrderDetailPage() {
           <CardTitle className="flex items-center justify-between">
             Order #{order.id}
             <Badge
-              variant={order.status === "Pending" ? "destructive" : "default"}
+              variant={order.status.toLocaleLowerCase() === "pending" ? "destructive" : "default"}
               className={
-                order.status === "Pending"
-                  ? "bg-red-500 text-white"
+                order.status.toLocaleLowerCase() === "pending"
+                  ? "bg-red-300 text-white"
                   : "bg-green-500 text-white"
               }
             >
@@ -204,7 +157,7 @@ export default function OrderDetailPage() {
             </Badge>
           </CardTitle>
           <CardDescription>
-            Placed on {format(order.orderDate, "MMM dd, yyyy 'at' HH:mm")}
+            Placed on {new Date(order.createdAt).toLocaleDateString()}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -213,19 +166,19 @@ export default function OrderDetailPage() {
               Customer Information
             </h3>
             <p className="text-gray-700">
-              <strong>Name:</strong> {order.customerName}
+              <strong>Name:</strong> {order.fromName}
             </p>
             <p className="text-gray-700">
-              <strong>Contact:</strong> {order.contactNumber}
+              <strong>Contact:</strong> {order.fromPhone}
             </p>
             <p className="text-gray-700">
-              <strong>Address:</strong> {order.address}
+              <strong>Address:</strong> {order.fromAddress}
             </p>
           </div>
           <Separator />
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              Products Ordered
+              Products Ordered ({order.products.length})
             </h3>
             <div className="overflow-x-auto">
               <Table>
@@ -239,18 +192,18 @@ export default function OrderDetailPage() {
                 </TableHeader>
                 <TableBody>
                   {order.products.map((product) => (
-                    <TableRow key={product.productId}>
-                      <TableCell className="font-medium">
+                    <TableRow key={product.productId} onClick={()=>{router.push(`/dashboard/products/${product.productId}`)}} className="cursor-pointer">
+                      <TableCell  className="font-medium ">
                         {product.productName}
                       </TableCell>
                       <TableCell className="text-center">
                         {product.quantity}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${product.pricePerUnit.toFixed(2)}
+                        ${product.price}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${(product.quantity * product.pricePerUnit).toFixed(2)}
+                        ${(product.quantity * parseFloat(product.price))}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -262,18 +215,37 @@ export default function OrderDetailPage() {
                 Total Order Amount:
               </span>
               <span className="text-xl font-bold text-gray-900">
-                ${order.totalPrice.toFixed(2)}
+                ${order.totalPrice}
               </span>
             </div>
           </div>
           <Separator />
-          {order.status === "Pending" && (
-            <div className="flex justify-end">
-              <Button onClick={handleConfirmOrder} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              disabled={deleteLoading} 
+              onClick={() => deleteProduct(order.id)} 
+              className="mx-1 text-red-600 cursor-pointer hover:text-red-700 bg-transparent"
+              style={deleteLoading ? { pointerEvents: "none", opacity: 0.5} : {}}
+              >
+              {
+                <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Product
+                </>
+              }
+            </Button>
+            {order.status.toLowerCase() === "pending" && (
+              <Button 
+                onClick={()=> handleConfirmOrder(order.id)} 
+                className="mx-1 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={deleteLoading}
+                style={deleteLoading ? { pointerEvents: "none", opacity: 0.5} : {}}
+              >
                 Confirm Order
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

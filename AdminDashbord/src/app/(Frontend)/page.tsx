@@ -11,6 +11,7 @@ import { Eye, EyeOff, Factory, Loader, Loader2 } from "lucide-react"
 import {useForm} from 'react-hook-form'
 import { set, z} from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from "next/navigation"
 
 const schema = z.object({
   email: z.string().email("enter a valid email"),
@@ -21,17 +22,21 @@ type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
 
 
   const {register, handleSubmit,formState: { errors, isSubmitting }, setError} = useForm<FormData>({resolver: zodResolver(schema)});
 
 
   const handleLogin = async(data: {email: string, password: string}) => {
-    console.log(data);
+    // console.log(data);
     try {
-      const res = await axios.get(`/api/auth/login?email=${data.email}&password=${data.password}`)
+      const res:any = await axios.get(`/api/auth/login?email=${data.email}&password=${data.password}`)
+      console.log(res.data)
       if (res.status === 200) {
-        window.location.href = "/dashboard"
+        // window.location.href = "/dashboard"
+        router.push("/dashboard")
+        // localStorage.setItem("token", res.data.token)
       }
     } catch (error:any) {
       console.log(error)

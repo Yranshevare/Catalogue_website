@@ -3,11 +3,12 @@ import prisma from "@/lib/prisma";
 import response from "@/lib/response";
 import { NextRequest } from "next/server";
 
-export async function  DELETE(req:NextRequest){
+export async function PUT(req:NextRequest){
     try {
         if(!req.cookies.get("refreshToken")){    // for already logged in user
             return response({error:"unauthorize access",status:400})
         }
+
         if(!verifyRefreshToken(req.cookies.get("refreshToken")?.value as string)){    // for already logged in user
             return response({message:"unauthorize access",status:400})
         }
@@ -21,10 +22,11 @@ export async function  DELETE(req:NextRequest){
             return response({message:"id is missing",status:400})
         }
 
-        const category = await prisma.category.delete({where:{id:id}})
-        // console.log(category)
+        const notification = await prisma.notification.update({where:{id:id},data:{status:"ACCEPTED"}})
+        // console.log(notification)
 
-        return response({message:"category deleted successfully",status:200, data:category})
+        return response({message:"notification confirmed successfully",status:200, data:notification})
+        
     } catch (error) {
         return response({message:"error while decoding the refresh token",status:400})
     }

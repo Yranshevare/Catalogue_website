@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -17,13 +17,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { Product } from "@/lib/types"
+import axios from "axios"
 
 interface BookingDialogProps {
   product: Product
   children: React.ReactNode
+  Quantity: number
 }
 
-export function BookingDialog({ product, children }: BookingDialogProps){
+export function BookingDialog({ product, children,Quantity }: BookingDialogProps){
     const [open, setOpen] = useState(false)
   const [formData, setFormData] = useState({
     customerName: "",
@@ -32,7 +34,14 @@ export function BookingDialog({ product, children }: BookingDialogProps){
     quantity: 1,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      quantity: Quantity,
+    }))
+  }, [Quantity])
+
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
 
     // Here you would typically send the booking data to your backend
@@ -41,21 +50,44 @@ export function BookingDialog({ product, children }: BookingDialogProps){
       productId: product.id,
       productName: product.productName,
     })
+    try {
+      const data = {
+        fromName: formData.customerName,
+        fromPhone: formData.contactInfo,
+        fromAddress: formData.address,
+        totalPrice: totalPrice.toFixed(2),
+        products:[
+          {
+            productId: product.id,
+            quantity: formData.quantity,
+            price: product.price
+          }
+        ]
+      }
+      const res = await axios.post("/api/notification/create", data)
+      console.log(res)
+
+      console.log(data)
+    } catch (error:any) {
+      console.log(error.message)
+    }finally{
+      setOpen(false)
+      setFormData({
+        customerName: "",
+        contactInfo: "",
+        address: "",
+        quantity: 1,
+      })
+    }
 
 
-    setOpen(false)
-    setFormData({
-      customerName: "",
-      contactInfo: "",
-      address: "",
-      quantity: 1,
-    })
+
   }
 
   const originalPrice = Number.parseFloat(product.price)
-  const discount = Number.parseFloat(product.discount || "0")
-  const discountedPrice = originalPrice * (1 - discount / 100)
-  const totalPrice = discountedPrice * formData.quantity
+  // const discount = Number.parseFloat(product.discount || "0")
+  // const discountedPrice = originalPrice * (1 - discount / 100)
+  const totalPrice = originalPrice * formData.quantity
 
   return(
      <Dialog open={open} onOpenChange={setOpen}>
@@ -103,9 +135,9 @@ export function BookingDialog({ product, children }: BookingDialogProps){
               <Input
                 id="quantity"
                 type="number"
-                min="1"
-                value={formData.quantity}
-                onChange={(e) => setFormData((prev) => ({ ...prev, quantity: Number.parseInt(e.target.value) || 1 }))}
+                min="0"
+                value={formData.quantity === 0 ? "" : formData.quantity}
+                onChange={(e) => setFormData((prev) => ({ ...prev, quantity: Number.parseInt(e.target.value) || 0 }))}
                 required
               />
             </div>
@@ -118,9 +150,12 @@ export function BookingDialog({ product, children }: BookingDialogProps){
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="w-full">
+            <div className="w-full flex flex-col items-center justify-center">
+              <Button type="submit" className="w-full">
               Confirm Booking
             </Button>
+            <p className="text-[12px] text-center text-[#acacac] mt-2">NOTE: If you are eligible for any discount it will be conducted at the time of delivery</p>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

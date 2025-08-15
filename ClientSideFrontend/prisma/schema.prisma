@@ -58,7 +58,7 @@ model Notification {
 
 type ProductItem {
   productId String @db.ObjectId  // reference to Product's _id
-  quantity  Int?
+  quantity  Int
   price String
 }
 

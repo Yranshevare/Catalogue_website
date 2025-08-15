@@ -8,11 +8,13 @@ export function generateRefreshToken(payload:object) {
 }
 
 
-export function verifyRefreshToken(token:string) {
+export function verifyRefreshToken(token:string ) {
+    console.log("kkk")
 
     try {
-        const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!)
-        return decoded
+        const decoded:any = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!)
+        // console.log(decoded,"lll")
+        return decoded.payload.email === process.env.ADMIN_EMAIL
     } catch (error:any) {
         return ({
             message:"error while decoding the refresh token",

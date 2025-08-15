@@ -16,6 +16,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import type { CartItem } from "@/lib/types";
+import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCart } from "@/hooks/use-cart";
 
 interface CartBookingDialogProps {
   cartItems: CartItem[];
@@ -23,11 +27,7 @@ interface CartBookingDialogProps {
   children: React.ReactNode;
 }
 
-export function CartBookingDialog({
-  cartItems,
-  totalPrice,
-  children,
-}: CartBookingDialogProps) {
+export function CartBookingDialog({cartItems,totalPrice,children,}: CartBookingDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     customerName: "",
@@ -35,7 +35,13 @@ export function CartBookingDialog({
     address: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const router = useRouter();
+
+    const { clearCart } = useCart()
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Here you would typically send the booking data to your backend
@@ -51,16 +57,45 @@ export function CartBookingDialog({
       totalAmount: totalPrice,
     })
 
-    setOpen(false)
-    setFormData({
-      customerName: "",
-      contactInfo: "",
-      address: "",
-    })
+    setSubmitting(true)
+    try {
+      const data = {
+        fromName: formData.customerName,
+        fromPhone: formData.contactInfo,
+        fromAddress: formData.address,
+        products: cartItems.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        totalPrice: String(totalPrice),
+      }
+      console.log(data)
+
+      const res = await axios.post("/api/notification/create", data)
+      console.log(res)
+      if(res.status ===200){
+        alert("Order Placed Successfully, Thank You For Shopping With Us")
+        clearCart()
+      }
+      
+    } catch (error:any) {
+      console.log(error.message)
+    }finally{
+      setOpen(false)
+      setFormData({
+        customerName: "",
+        contactInfo: "",
+        address: "",
+      })
+      setSubmitting(false)
+    }
+
+
   }
 
   return(
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={submitting ? undefined : setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -111,9 +146,7 @@ export function CartBookingDialog({
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {cartItems.map((item) => {
                   const originalPrice = Number.parseFloat(item.price)
-                  const discount = Number.parseFloat(item.discount || "0")
-                  const discountedPrice = originalPrice * (1 - discount / 100)
-                  const itemTotal = discountedPrice * item.quantity
+                  const itemTotal = originalPrice * item.quantity
 
                   return (
                     <div key={item.id} className="flex justify-between items-start text-sm border-b pb-2">
@@ -122,18 +155,12 @@ export function CartBookingDialog({
                         <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                           <span>Qty: {item.quantity}</span>
                           <span>•</span>
-                          <span>${discountedPrice.toFixed(2)} each</span>
-                          {discount > 0 && (
-                            <>
-                              <span>•</span>
-                              <span className="line-through">${originalPrice.toFixed(2)}</span>
-                            </>
-                          )}
+                          <span>Rs {originalPrice.toFixed(2)} each</span>
+                        
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${itemTotal.toFixed(2)}</p>
-                        {discount > 0 && <p className="text-xs text-green-600">-{discount}% off</p>}
+                        <p className="font-semibold">Rs {itemTotal.toFixed(2)}</p>
                       </div>
                     </div>
                   )
@@ -146,7 +173,7 @@ export function CartBookingDialog({
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>Rs {totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Shipping</span>
@@ -154,21 +181,30 @@ export function CartBookingDialog({
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Tax</span>
-                  <span>$0.00</span>
+                  <span>Rs 0.00</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total Amount</span>
-                  <span className="text-primary">${totalPrice.toFixed(2)}</span>
+                  <span className="text-primary">Rs {totalPrice.toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground text-center mt-2">Payment will be collected on delivery</p>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" className="w-full" size="lg">
-              Confirm Order - ${totalPrice.toFixed(2)}
-            </Button>
+            <div className="w-full flex flex-col items-center justify-center">
+              <Button type="submit" disabled={submitting} style={submitting ? { opacity: 0.5 } : {  }} className="w-full" size="lg">
+                {
+                  submitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ):
+                  `Confirm Order :- Rs ${totalPrice.toFixed(2)}`
+
+                }
+              </Button>
+              <p className="text-[12px] text-center text-[#acacac] mt-2">NOTE: If you are eligible for any discount it will be conducted at the time of delivery</p>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

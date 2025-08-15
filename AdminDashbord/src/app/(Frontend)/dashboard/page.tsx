@@ -44,44 +44,44 @@ let stats = [
   
 ];
 
-const recentProducts = [
-  {
-    id: 1,
-    name: "Industrial Steel Pipes",
-    category: "Construction Materials",
-    status: "Active",
-    price: "$45.99",
-    stock: 150,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 2,
-    name: "Heavy Duty Bolts Set",
-    category: "Hardware",
-    status: "Active",
-    price: "$12.50",
-    stock: 300,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    name: "Safety Helmets",
-    category: "Safety Equipment",
-    status: "Low Stock",
-    price: "$25.00",
-    stock: 15,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    name: "Welding Electrodes",
-    category: "Welding Supplies",
-    status: "Active",
-    price: "$8.75",
-    stock: 200,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-];
+// const recentProducts = [
+//   {
+//     id: 1,
+//     name: "Industrial Steel Pipes",
+//     category: "Construction Materials",
+//     status: "Active",
+//     price: "$45.99",
+//     stock: 150,
+//     image: "/placeholder.svg?height=40&width=40",
+//   },
+//   {
+//     id: 2,
+//     name: "Heavy Duty Bolts Set",
+//     category: "Hardware",
+//     status: "Active",
+//     price: "$12.50",
+//     stock: 300,
+//     image: "/placeholder.svg?height=40&width=40",
+//   },
+//   {
+//     id: 3,
+//     name: "Safety Helmets",
+//     category: "Safety Equipment",
+//     status: "Low Stock",
+//     price: "$25.00",
+//     stock: 15,
+//     image: "/placeholder.svg?height=40&width=40",
+//   },
+//   {
+//     id: 4,
+//     name: "Welding Electrodes",
+//     category: "Welding Supplies",
+//     status: "Active",
+//     price: "$8.75",
+//     stock: 200,
+//     image: "/placeholder.svg?height=40&width=40",
+//   },
+// ];
 
 type stats = {
   title: string

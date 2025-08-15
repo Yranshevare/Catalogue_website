@@ -1,19 +1,57 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Search, Filter } from 'lucide-react'
+import { useState, useMemo, useCallback, useEffect } from "react"
+import { Search, Filter, Loader2 } from 'lucide-react'
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ProductCard } from "@/components/product-card"
-import { mockProducts, categories } from "@/lib/data"
+// import { mockProducts, categories } from "@/lib/data"
+import axios from "axios"
+import type {  Product } from "@/lib/types"
+
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [sortBy, setSortBy] = useState("name")
+  const [isLoading, setIsLoading] = useState(true)
+  const [productList, setProductList] = useState<Product[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await axios.get("api/product/getAll"); // use full URL
+      const cat = await axios.get("api/category");
+      const categories = cat.data.data.map((category:any) => category.categoryName)
+      setCategories(["All",...categories])
+      // console.log(cat.data.data)
+      // console.log(res.data.data)
+      if(res.status === 200){
+        setIsLoading(false)
+        setProductList(res.data.data)
+      }
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+     const filtered = productList.filter((product:any) => {
+      const matchesSearch =
+        product.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
+
+      return matchesSearch && matchesCategory
+    })
+  }, [productList])
 
   const filteredAndSortedProducts = useMemo(() => {
-    const filtered = mockProducts.filter((product) => {
+    const filtered = productList.filter((product:any) => {
       const matchesSearch =
         product.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -23,7 +61,7 @@ export default function ProductsPage() {
     })
 
     // Sort products
-    filtered.sort((a, b) => {
+    filtered.sort((a:any, b:any) => {
       switch (sortBy) {
         case "price-low":
           return Number.parseFloat(a.price) - Number.parseFloat(b.price)
@@ -39,7 +77,20 @@ export default function ProductsPage() {
     })
 
     return filtered
-  }, [searchQuery, selectedCategory, sortBy])
+  }, [searchQuery, selectedCategory, sortBy,productList])
+
+
+  if(isLoading){
+    return (
+      <div className="container w-full   mx-auto px-4 py-8">
+        <div className="flex h-[80vh] items-center justify-center" >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <h1 className="">Loading...</h1>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -92,7 +143,7 @@ export default function ProductsPage() {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredAndSortedProducts.map((product) => (
+        {filteredAndSortedProducts.map((product:any) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>

@@ -81,7 +81,7 @@ class CartStore {
       const price = Number.parseFloat(item.price)
       const discount = Number.parseFloat(item.discount || "0")
       const discountedPrice = price * (1 - discount / 100)
-      return total + discountedPrice * item.quantity
+      return total + price * item.quantity
     }, 0)
   }
 

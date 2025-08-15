@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { BellRing } from "lucide-react";
+import { BellRing, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -29,111 +29,39 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import axios from "axios";
 
 interface ProductOrder {
   productId: string;
-  productName: string;
   quantity: number;
-  pricePerUnit: number;
+  price: number;
 }
 
 interface Order {
   id: string;
-  customerName: string;
-  contactNumber: string;
-  address: string;
+  fromName: string;
+  fromPhone: string;
+  fromAddress: string;
   products: ProductOrder[];
   totalPrice: number;
-  status: "Pending" | "Confirmed";
-  orderDate: Date;
+  status: "PENDING" | "ACCEPTED";
+  createdAt: Date;
 }
 
-const mockOrders: Order[] = [
-  {
-    id: "ORD001",
-    customerName: "Alice Smith",
-    contactNumber: "123-456-7890",
-    address: "123 Main St, Anytown, USA",
-    products: [
-      {
-        productId: "PROD001",
-        productName: "Widget A",
-        quantity: 2,
-        pricePerUnit: 10.5,
-      },
-      {
-        productId: "PROD003",
-        productName: "Gadget C",
-        quantity: 1,
-        pricePerUnit: 25.0,
-      },
-    ],
-    totalPrice: 46.0,
-    status: "Pending",
-    orderDate: new Date("2025-07-30T10:00:00Z"),
-  },
-  {
-    id: "ORD002",
-    customerName: "Bob Johnson",
-    contactNumber: "098-765-4321",
-    address: "456 Oak Ave, Otherville, USA",
-    products: [
-      {
-        productId: "PROD002",
-        productName: "Thing B",
-        quantity: 5,
-        pricePerUnit: 5.75,
-      },
-    ],
-    totalPrice: 28.75,
-    status: "Confirmed",
-    orderDate: new Date("2025-07-29T14:30:00Z"),
-  },
-  {
-    id: "ORD003",
-    customerName: "Charlie Brown",
-    contactNumber: "555-123-4567",
-    address: "789 Pine Ln, Somewhere, USA",
-    products: [
-      {
-        productId: "PROD001",
-        productName: "Widget A",
-        quantity: 1,
-        pricePerUnit: 10.5,
-      },
-      {
-        productId: "PROD002",
-        productName: "Thing B",
-        quantity: 3,
-        pricePerUnit: 5.75,
-      },
-      {
-        productId: "PROD003",
-        productName: "Gadget C",
-        quantity: 2,
-        pricePerUnit: 25.0,
-      },
-    ],
-    totalPrice: 87.75,
-    status: "Pending",
-    orderDate: new Date("2025-07-31T09:15:00Z"),
-  },
-];
-
 export default function NotificationsPage() {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<
-    "All" | "Pending" | "Confirmed"
+    "All" | "PENDING" | "ACCEPTED"
   >("All");
   const [loading, setLoading] = useState<boolean>(true);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.fromName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.contactNumber.includes(searchTerm) ||
-      order.address.toLowerCase().includes(searchTerm.toLowerCase());
+      order.fromPhone.includes(searchTerm) ||
+      order.fromAddress.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "All" || order.status === statusFilter;
@@ -141,20 +69,22 @@ export default function NotificationsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  /*useEffect(()=>{
+  useEffect(()=>{
     fetchOrders()
   },[])
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get("/api/orders")
-      setOrders(response.data)
-    } catch (error) {
-      console.error("Failed to fetch orders:", error)
+      const res = await axios.get("/api/notification/get")
+      console.log(res.data.data)
+      setOrders(res.data.data)
+    } catch (error:any) {
+      console.error("Failed to fetch orders:", error.message)
     } finally {
       setLoading(false)
     }
-  }*/
+  }
+  if(loading){return <div className="text-center flex items-center justify-center w-full h-[80vh]"><Loader2 className="animate-spin mr-5"/>Loading...</div>}
 
   return (
     <div className="space-y-6 px-4 sm:px-6 md:px-8 py-4">
@@ -182,7 +112,7 @@ export default function NotificationsPage() {
         </div>
         <Select
           value={statusFilter}
-          onValueChange={(value: "All" | "Pending" | "Confirmed") =>
+          onValueChange={(value: "All" | "PENDING" | "ACCEPTED") =>
             setStatusFilter(value)
           }
         >
@@ -191,8 +121,8 @@ export default function NotificationsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All Orders</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Confirmed">Confirmed</SelectItem>
+            <SelectItem value="PENDING">Pending</SelectItem>
+            <SelectItem value="ACCEPTED">Confirmed</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -242,7 +172,7 @@ export default function NotificationsPage() {
                           href={`/dashboard/notifications/${order.id}`}
                           className="block py-2"
                         >
-                          {order.id}
+                          {order.id.slice(15)}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -250,7 +180,7 @@ export default function NotificationsPage() {
                           href={`/dashboard/notifications/${order.id}`}
                           className="block py-2"
                         >
-                          {order.customerName}
+                          {order.fromName}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -258,7 +188,7 @@ export default function NotificationsPage() {
                           href={`/dashboard/notifications/${order.id}`}
                           className="block py-2"
                         >
-                          ${order.totalPrice.toFixed(2)}
+                          ${order.totalPrice}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -266,7 +196,7 @@ export default function NotificationsPage() {
                           href={`/dashboard/notifications/${order.id}`}
                           className="block py-2"
                         >
-                          {format(order.orderDate, "MMM dd, yyyy HH:mm")}
+                          {format(order.createdAt, "MMM dd, yyyy HH:mm")}
                         </Link>
                       </TableCell>
                       <TableCell>
@@ -276,17 +206,17 @@ export default function NotificationsPage() {
                         >
                           <Badge
                             variant={
-                              order.status === "Pending"
+                              order.status === "PENDING"
                                 ? "destructive"
                                 : "default"
                             }
                             className={
-                              order.status === "Pending"
+                              order.status === "PENDING"
                                 ? "bg-red-500 text-white"
                                 : "bg-green-500 text-white"
                             }
                           >
-                            {order.status}
+                            {order.status.toLowerCase()}
                           </Badge>
                         </Link>
                       </TableCell>
