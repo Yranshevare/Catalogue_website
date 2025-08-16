@@ -1,120 +1,132 @@
-import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru"
-import { verifyRefreshToken } from "@/lib/handleToken"
-import prisma from "@/lib/prisma"
-import response from "@/lib/response"
-import { refreshCategory, refreshProduct } from "@/lib/revaldate"
-import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
-import { NextRequest } from "next/server"
+import { deleteCloudinaryImage } from "@/lib/deleteImageFormColudinaru";
+import { verifyRefreshToken } from "@/lib/handleToken";
+import prisma from "@/lib/prisma";
+import response from "@/lib/response";
+import { refreshCategory, refreshProduct } from "@/lib/revaldate";
+import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary";
+import { NextRequest } from "next/server";
 
-type DataType = {
-    id:string
-    productName:string
-    images:string[]
-    primaryImage:string
-    category?:string
-    description:string
-    price:string
-    material?:string
-    size?:string
-    weight?:string
-    discount?:string
-    otherSpecification?:string
-}
-
-
-export async function POST(req:NextRequest){
-    try {
-
-        const data:DataType = await req.json()
-
-        if(!data.id){        // for empty email or password
-            return response({message:"id is missing",status:400})
-        }
-
-        if(!req.cookies.get("refreshToken")){    // for already logged in user
-            return response({error:"unauthorize access",status:400})
-        }
-
-        if(!verifyRefreshToken(req.cookies.get("refreshToken")?.value as string)){    // for already logged in user
-            return response({message:"unauthorize access",status:400})
-        }
-
-        const category = await prisma.category.findFirst({
-            where:{
-                categoryName:data.category
-            }
-        })       
-        
-        let pImage:any = data.primaryImage
-        if(!pImage.startsWith("http")){    // for not uploaded image
-            const data:any = await uploadOnCloudinary(pImage)
-            pImage = data.url 
-        }
-
-        
-
-        let image:any = data.images
-        await Promise.all(image.map(async(img:any,index:number) => {
-            if(!img.startsWith("http")){    // for not uploaded image
-                let imgData:any = await uploadOnCloudinary(img)
-                image[index] = imgData.url 
-            }
-        }))
-
-        const pro:any = await prisma.product.findUnique({
-            where:{
-                id:data.id
-            }
-        })
-
-        const newImages = [pImage,...image]
-        const oldImages = [pro?.primaryImage,...pro?.images]
-        //find old images that are not in new images
-        const deletedImages = oldImages.filter((img:any) => !newImages.includes(img))
-
-        await Promise.all(deletedImages.map(async(img:any) => {
-            if(img.startsWith("http")){    // for not uploaded image
-                const res = await deleteCloudinaryImage(img)
-                console.log("deleting image from cloudinary",img)
-            }
-        }))
-        
-        // console.log(image,pImage)
-        const product = await prisma.product.update({
-            where:{
-                id:data.id
-            },
-            data:{
-                productName:data.productName,
-                images:image,
-                primaryImage:pImage,
-                category:category?.categoryName,
-                description:data.description,
-                price:data.price,
-                material:data.material,
-                size:data.size,
-                weight:data.weight,
-                discount:data.discount,
-                otherSpecification:data.otherSpecification
-            }
-        })
-        if(pro.productName !== data.productName || pro.primaryImage !== data.primaryImage || pro.category !== data.category || pro.price !== data.price){
-            await refreshProduct()
-        }
-        if(pro.category !== data.category){
-            await refreshCategory()
-        }
-        
-        return response({
-            message:"product added successfully",
-            status:200,
-            data:product
-        })
-    } catch (error:any) {
-        return response({
-            message:"error while adding the product",
-            status:400,
-            error:error.message
-        })
+export async function POST(req: NextRequest) {
+  try {
+    // --- Auth check ---
+    const token = req.cookies.get("refreshToken")?.value;
+    if (!token) {
+      return response({ error: "unauthorize access", status: 400 });
     }
+    if (!verifyRefreshToken(token)) {
+      return response({ message: "unauthorize access", status: 400 });
+    }
+
+    // --- Parse form data ---
+    const formData = await req.formData();
+
+    const id = formData.get("id") as string;
+    if (!id) {
+      return response({ message: "id is missing", status: 400 });
+    }
+
+    const productName = formData.get("productName") as string;
+    const categoryName = formData.get("category") as string;
+    const description = formData.get("description") as string;
+    const price = formData.get("price") as string;
+    const material = formData.get("material") as string | null;
+    const size = formData.get("size") as string | null;
+    const weight = formData.get("weight") as string | null;
+    const discount = formData.get("discount") as string | null;
+    const otherSpecification = formData.get("otherSpecification") as string | null;
+
+    // --- Primary image ---
+    let pImage: string | null = null;
+    const primaryImage = formData.get("primaryImage");
+
+    if (primaryImage instanceof File) {
+      // New upload
+      pImage = await uploadOnCloudinary(primaryImage);
+    } else if (typeof primaryImage === "string") {
+      // Existing URL
+      pImage = primaryImage;
+    }
+
+    // --- Secondary images ---
+    const imageEntries = formData.getAll("images");
+    let images: string[] = [];
+
+    for (const entry of imageEntries) {
+      if (entry instanceof File) {
+        const uploaded = await uploadOnCloudinary(entry);
+        if (uploaded) images.push(uploaded);
+      } else if (typeof entry === "string") {
+        images.push(entry);
+      }
+    }
+
+    // --- Existing product for diff ---
+    const pro: any = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    // Compare new vs old images
+    const newImages = [pImage, ...images];
+    const oldImages = [pro?.primaryImage, ...(pro?.images || [])];
+    const deletedImages = oldImages.filter((img: string) => img && !newImages.includes(img));
+
+    // Delete unused images from Cloudinary
+    await Promise.all(
+      deletedImages.map(async (img: string) => {
+        if (img.startsWith("http")) {
+          await deleteCloudinaryImage(img);
+          console.log("Deleted from Cloudinary:", img);
+        }
+      })
+    );
+
+    // --- Category check ---
+    const category = await prisma.category.findFirst({
+      where: { categoryName },
+    });
+
+    // --- Update product ---
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        productName,
+        images,
+        primaryImage: pImage || "",
+        category: category?.categoryName,
+        description,
+        price,
+        material: material || undefined,
+        size: size || undefined,
+        weight: weight || undefined,
+        discount: discount || undefined,
+        otherSpecification: otherSpecification || undefined,
+      },
+    });
+
+    // --- Revalidation ---
+    if (
+      pro.productName !== productName ||
+      pro.primaryImage !== pImage ||
+      pro.category !== category?.categoryName ||
+      pro.price !== price
+    ) {
+      await refreshProduct();
+    }
+    if (pro.category !== category?.categoryName) {
+      await refreshCategory();
+    }
+
+    return response({
+      message: "product updated successfully",
+      status: 200,
+      data: product,
+    });
+  } catch (error: any) {
+    console.error("Update error:", error.message);
+    return response({
+      message: "error while updating the product",
+      status: 400,
+      error: error.message,
+    });
+  }
 }

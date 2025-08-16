@@ -18,7 +18,6 @@ import {
 import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import addImageToLocalServer from "@/lib/localImg";
 import { refreshDashboard, refreshProduct } from "../../../../../../lib/revaldate";
 
 
@@ -155,66 +154,66 @@ export default function EditProductPage({params,}: ProductPageProps) {
   
   },[images]) 
 
-  const handleSubmit = async(e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true)
-    // In a real application, you would send this data to your backend to update the product
-    console.log("Updating product:", id);
-    console.log("Form data:", formData);
-    console.log(
-      "Images (newly uploaded files and existing image URLs):",
-      images.map((img) => (img.file ? img.file : img.preview))
-    );
-    console.log("Specifications:", specifications);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSaving(true);
 
-    try {
-      let image:string[] = []
-      await Promise.all(images.map(async(img,index) => {
-        if  (img.file) {
-          console.log("Uploading image:", img.file);
-          let path = await addImageToLocalServer(img.file) as string
-          image[index] = path
-        }else{
-          image[index] = img.preview
+  try {
+    // Build FormData
+    const formDataToSend = new FormData();
+    formDataToSend.append("id", id);
+
+    // Handle images (mix of existing URLs and new files)
+    images.forEach((img: any, index: number) => {
+      if (img.file) {
+        // New file upload
+        if (index === 0) {
+          formDataToSend.append("primaryImage", img.file);
+        } else {
+          formDataToSend.append("images", img.file);
         }
-      }))
-      console.log(image)
-
-
-      const values = {
-        id:id,
-        productName:formData.name,
-        images:image.slice(1),
-        primaryImage:image[0],
-        category:formData.category,
-        description:formData.description,
-        price:formData.price,
-        material:specifications.material,
-        size:specifications.dimensions,
-        weight:specifications.weight,
-        discount:formData.Discount,
-        otherSpecification:specifications.other,
+      } else {
+        // Already existing image URL → send as string
+        if (index === 0) {
+          formDataToSend.append("primaryImage", img.preview);
+        } else {
+          formDataToSend.append("images", img.preview);
+        }
       }
-      console.log(values)
+    });
 
-      const res = await axios.post("/api/product/update", values);
+    // Append other fields
+    formDataToSend.append("productName", formData.name);
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("price", formData.price);
+    formDataToSend.append("material", specifications.material || "");
+    formDataToSend.append("size", specifications.dimensions || "");
+    formDataToSend.append("weight", specifications.weight || "");
+    formDataToSend.append("discount", formData.Discount || "");
+    formDataToSend.append("otherSpecification", specifications.other || "");
 
-      if (res.status === 200) {
-        console.log(res.data);
-        await refreshDashboard()
-        router.push(`/dashboard/products/${id}`);
-      }
-    } catch (error) {
-      console.error("Error updating product:", error);
-      setError("Failed to update product.");
-      
-    }finally{
-      setIsSaving(false)
+    // Send request
+    const res = await axios.post("/api/product/update", formDataToSend, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (res.status === 200) {
+      console.log(res.data);
+      await refreshDashboard();
+      await refreshProduct();
+      router.push(`/dashboard/products/${id}`);
     }
+  } catch (error) {
+    console.error("Error updating product:", error);
+    setError("Failed to update product.");
+  } finally {
+    setIsSaving(false);
+  }
+};
 
-    // Simulate successful update and redirect
-    // router.push(`/dashboard/products/${productId}`);
-  };
 
 
   if (loading) {

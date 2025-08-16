@@ -1,81 +1,76 @@
-import { verifyRefreshToken } from "@/lib/handleToken"
-import prisma from "@/lib/prisma"
-import response from "@/lib/response"
-import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary"
-import { NextRequest } from "next/server"
+import { verifyRefreshToken } from "@/lib/handleToken";
+import prisma from "@/lib/prisma";
+import response from "@/lib/response";
+import { uploadOnCloudinary } from "@/lib/uploadImageToCloudinary";
+import { NextRequest } from "next/server";
 
-type DataType = {
-    productName:string
-    images:string[]
-    primaryImage:string
-    category?:string
-    description:string
-    price:string
-    material?:string
-    size?:string
-    weight?:string
-    discount?:string
-    otherSpecification?:string
-}
-
-
-export async function POST(req:NextRequest){
-    try {
-
-        if(!req.cookies.get("refreshToken")){    // for already logged in user
-            return response({error:"unauthorize access",status:400})
-        }
-
-        if(!verifyRefreshToken(req.cookies.get("refreshToken")?.value as string)){    // for already logged in user
-            return response({message:"unauthorize access",status:400})
-        }
-
-        const data:DataType = await req.json()
-
-        const category = await prisma.category.findFirst({
-            where:{
-                categoryName:data.category
-            }
-        })       
-        
-        const pImage = await uploadOnCloudinary(data.primaryImage)
-        console.log(pImage)
-        
-        const img = []
-        for await (const i of data.images) {
-            img.push(await uploadOnCloudinary(i))
-        } 
-        let images:any = await Promise.all(img)
-        images = images.filter((i:any) => i !== null).map((i:any) => i.url)
-        
-        const product = await prisma.product.create({
-            data:{
-                productName:data.productName,
-                images:images ,
-                primaryImage:pImage?.url || data.primaryImage,
-                category:category?.categoryName,
-                description:data.description,
-                price:data.price,
-                material:data.material,
-                size:data.size,
-                weight:data.weight,
-                discount:data.discount,
-                otherSpecification:data.otherSpecification
-            }
-        })
-        console.log(data);
-        
-        return response({
-            message:"product added successfully",
-            status:200,
-            data:product
-        })
-    } catch (error:any) {
-        console.log(error.message)
-        return response({
-            message:"error while adding the product",
-            status:400,
-            error:error.message
-        })
+export async function POST(req: NextRequest) {
+  try {
+    // --- Auth check ---
+    const token = req.cookies.get("refreshToken")?.value;
+    if (!token) {
+      return response({ error: "unauthorize access", status: 400 });
     }
+    if (!verifyRefreshToken(token)) {
+      return response({ message: "unauthorize access", status: 400 });
+    }
+
+    // --- Parse FormData ---
+    const formData = await req.formData();
+
+    const productName = formData.get("productName") as string;
+    const category = formData.get("category") as string;
+    const description = formData.get("description") as string;
+    const price = formData.get("price") as string;
+    const material = formData.get("material") as string | null;
+    const size = formData.get("size") as string | null;
+    const weight = formData.get("weight") as string | null;
+    const discount = formData.get("discount") as string | null;
+    const otherSpecification = formData.get("otherSpecification") as string | null;
+
+    const primaryImageFile = formData.get("primaryImage") as File | null;
+    const imageFiles = formData.getAll("images") as File[];
+
+    // --- Upload to Cloudinary ---
+    let pImage: any = null;
+    if (primaryImageFile) {
+      pImage = await uploadOnCloudinary(primaryImageFile);
+    }
+
+    const img: string[] = [];
+    for await (const file of imageFiles) {
+      const uploaded = await uploadOnCloudinary(file);
+      if (uploaded) img.push(uploaded);
+    }
+
+    // --- Save to DB ---
+    const product = await prisma.product.create({
+      data: {
+        productName,
+        primaryImage: pImage || "",
+        images: img,
+        category: category || null,
+        description,
+        price,
+        material: material || undefined,
+        size: size || undefined,
+        weight: weight || undefined,
+        discount: discount || undefined,
+        otherSpecification: otherSpecification || undefined,
+      },
+    });
+
+    return response({
+      message: "product added successfully",
+      status: 200,
+      data: product,
+    });
+  } catch (error: any) {
+    console.log(error.message);
+    return response({
+      message: "error while adding the product",
+      status: 400,
+      error: error.message,
+    });
+  }
 }

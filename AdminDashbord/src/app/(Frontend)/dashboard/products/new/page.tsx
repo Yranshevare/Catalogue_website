@@ -19,7 +19,6 @@ import { ArrowLeft, Loader2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {useForm} from 'react-hook-form'
-import addImageToLocalServer from "@/lib/localImg";
 import {  refreshCategory, refreshDashboard, refreshProduct } from "../../../../../lib/revaldate";
 
 
@@ -110,46 +109,58 @@ export default function NewProductPage() {
     });
   };
 
-  const Submit = async(data:any) => {
-    if(images.length < 1){
-      alert("Please add at least one image")
-      return
-    }
-    
-    let image = []
-    for await (const img of images) {
-      console.log(img)
-      if(img.file){
-        image.push(await addImageToLocalServer(img.file))
-      }
-    } 
+const Submit = async (data: any) => {
+  if (images.length < 1) {
+    alert("Please add at least one image");
+    return;
+  }
 
-    const values = {
-        productName:formData.name,
-        images:image.slice(1),
-        primaryImage:image[0],
-        category:formData.category,
-        description:formData.description,
-        price:formData.price,
-        material:specifications.material,
-        size:specifications.dimensions,
-        weight:specifications.weight,
-        discount:formData.discount,
-        otherSpecification:specifications.other,
+  // Create FormData object
+  const formDataToSend = new FormData();
+
+  // Append all images
+  images.forEach((img: any, index: number) => {
+    if (img.file) {
+      if (index === 0) {
+        formDataToSend.append("primaryImage", img.file); // first one = primary
+      } else {
+        formDataToSend.append("images", img.file); // others = secondary images
+      }
     }
-    console.log(values)
-    try {
-      const res = await axios.post("/api/product/add", values);
-      console.log(res)
-      await refreshDashboard()
-      await refreshProduct()
-      await refreshCategory()
-    } catch (error:any) {
-      alert(error.response.data.message || `Something went wrong please try again \n${error.message}`);
-    }
+  });
+
+  // Append other fields
+  formDataToSend.append("productName", formData.name);
+  formDataToSend.append("category", formData.category);
+  formDataToSend.append("description", formData.description);
+  formDataToSend.append("price", formData.price);
+  formDataToSend.append("material", specifications.material);
+  formDataToSend.append("size", specifications.dimensions);
+  formDataToSend.append("weight", specifications.weight);
+  formDataToSend.append("discount", formData.discount);
+  formDataToSend.append("otherSpecification", specifications.other);
+
+  try {
+    const res = await axios.post("/api/product/add", formDataToSend, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    console.log(res);
+    await refreshDashboard();
+    await refreshProduct();
+    await refreshCategory();
 
     window.location.href = "/dashboard/products";
-  };
+  } catch (error: any) {
+    alert(
+      error.response?.data?.message ||
+        `Something went wrong please try again \n${error.message}`
+    );
+  }
+};
+
 
 
   if (isLoading) {
