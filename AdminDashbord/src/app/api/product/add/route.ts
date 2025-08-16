@@ -38,20 +38,20 @@ export async function POST(req:NextRequest){
             }
         })       
         
-        console.log(data);
         const pImage = await uploadOnCloudinary(data.primaryImage)
-
+        console.log(pImage)
+        
         const img = []
         for await (const i of data.images) {
             img.push(await uploadOnCloudinary(i))
         } 
         let images:any = await Promise.all(img)
         images = images.filter((i:any) => i !== null).map((i:any) => i.url)
-
+        
         const product = await prisma.product.create({
             data:{
                 productName:data.productName,
-                images:images || data.images,
+                images:images ,
                 primaryImage:pImage?.url || data.primaryImage,
                 category:category?.categoryName,
                 description:data.description,
@@ -63,6 +63,7 @@ export async function POST(req:NextRequest){
                 otherSpecification:data.otherSpecification
             }
         })
+        console.log(data);
         
         return response({
             message:"product added successfully",
@@ -70,6 +71,7 @@ export async function POST(req:NextRequest){
             data:product
         })
     } catch (error:any) {
+        console.log(error.message)
         return response({
             message:"error while adding the product",
             status:400,
