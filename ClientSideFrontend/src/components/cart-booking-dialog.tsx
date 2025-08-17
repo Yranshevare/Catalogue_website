@@ -18,7 +18,6 @@ import { Separator } from "@/components/ui/separator";
 import type { CartItem } from "@/lib/types";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCart } from "@/hooks/use-cart";
 
 interface CartBookingDialogProps {
@@ -37,7 +36,6 @@ export function CartBookingDialog({cartItems,totalPrice,children,}: CartBookingD
 
   const [submitting, setSubmitting] = useState(false);
 
-  const router = useRouter();
 
     const { clearCart } = useCart()
 

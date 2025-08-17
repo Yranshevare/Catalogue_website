@@ -33,6 +33,7 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
     address: "",
     quantity: 1,
   })
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -44,6 +45,11 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
   const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault()
 
+    if(totalPrice === 0){
+      alert("Please Select Quantity")
+      return
+    }
+
     // Here you would typically send the booking data to your backend
     console.log("Booking submitted:", {
       ...formData,
@@ -51,6 +57,7 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
       productName: product.productName,
     })
     try {
+      setSubmitting(true)
       const data = {
         fromName: formData.customerName,
         fromPhone: formData.contactInfo,
@@ -81,6 +88,7 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
         address: "",
         quantity: 1,
       })
+      setSubmitting(false)
     }
 
 
@@ -93,7 +101,7 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
   const totalPrice = originalPrice * formData.quantity
 
   return(
-     <Dialog open={open} onOpenChange={setOpen}>
+     <Dialog open={open} onOpenChange={submitting ? undefined : setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -154,7 +162,7 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
           </div>
           <DialogFooter>
             <div className="w-full flex flex-col items-center justify-center">
-              <Button type="submit" className="w-full">
+              <Button type="submit" disabled={submitting} style={submitting ? {cursor: "not-allowed", opacity: 0.5} : {cursor: "pointer"}} className="w-full">
               Confirm Booking
             </Button>
             <p className="text-[12px] text-center text-[#acacac] mt-2">NOTE: If you are eligible for any discount it will be conducted at the time of delivery</p>
