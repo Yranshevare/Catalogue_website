@@ -65,9 +65,12 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
         ]
       }
       const res = await axios.post("/api/notification/create", data)
-      console.log(res)
-
-      console.log(data)
+      // console.log(res)
+      console.log(res.data) 
+      if(res.status === 200){
+        alert("Order Placed Successfully, Thank You For Shopping With Us")
+      }
+      // console.log(data)
     } catch (error:any) {
       console.log(error.message)
     }finally{
