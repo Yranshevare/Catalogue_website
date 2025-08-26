@@ -200,10 +200,10 @@ export default function OrderDetailPage() {
                         {product.quantity}
                       </TableCell>
                       <TableCell className="text-right">
-                        ${product.price}
+                        Rs {product.price}
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        ${(product.quantity * parseFloat(product.price))}
+                        Rs {(product.quantity * parseFloat(product.price))}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -215,7 +215,7 @@ export default function OrderDetailPage() {
                 Total Order Amount:
               </span>
               <span className="text-xl font-bold text-gray-900">
-                ${order.totalPrice}
+                Rs {order.totalPrice}
               </span>
             </div>
           </div>

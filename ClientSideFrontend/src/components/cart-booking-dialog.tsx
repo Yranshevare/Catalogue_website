@@ -106,7 +106,7 @@ export function CartBookingDialog({cartItems,totalPrice,children,}: CartBookingD
           <div className="grid gap-4 py-4">
             {/* Customer Information */}
             <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">Full Name / Shop Name</Label>
               <Input
                 id="name"
                 value={formData.customerName}

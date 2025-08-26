@@ -262,7 +262,7 @@ export default function CategoryDetailPage({params,}: ProductPageProps) {
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
                           <p className="font-medium text-gray-900">
-                            ${product.price}
+                            Rs {product.price}
                           </p>
                           
                         </div>

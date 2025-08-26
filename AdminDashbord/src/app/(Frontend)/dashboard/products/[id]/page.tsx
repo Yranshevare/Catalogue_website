@@ -253,7 +253,7 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
                   <DollarSign className="w-4 h-4 text-gray-400" />
                   <span className="text-sm font-medium text-gray-600">Price</span>
                 </div>
-                <span className="text-lg font-bold text-gray-900">${product.price}</span>
+                <span className="text-lg font-bold text-gray-900">Rs {product.price}</span>
               </div>
               <Separator />
               

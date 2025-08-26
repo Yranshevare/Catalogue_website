@@ -188,7 +188,7 @@ export default function NotificationsPage() {
                           href={`/dashboard/notifications/${order.id}`}
                           className="block py-2"
                         >
-                          ${order.totalPrice}
+                          Rs {order.totalPrice}
                         </Link>
                       </TableCell>
                       <TableCell>
