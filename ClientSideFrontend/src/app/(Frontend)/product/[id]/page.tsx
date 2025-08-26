@@ -129,7 +129,7 @@ export default function ProductDetailPage() {
                   src={image || "/placeholder.svg"}
                   alt={`${product.productName} view ${index + 1}`}
                   fill
-                  className=""
+                  className="object-contain "
                 />
               </button>
             ))}
