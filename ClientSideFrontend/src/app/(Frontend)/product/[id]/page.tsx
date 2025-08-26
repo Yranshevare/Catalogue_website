@@ -106,7 +106,7 @@ export default function ProductDetailPage() {
               src={product.images[selectedImageIndex] || "/placeholder.svg"}
               alt={product.productName}
               fill
-              className="object-cover "
+              className="object-contain "
             />
             {/* {discount > 0 && (
               <Badge className="absolute top-4 left-4 bg-red-500 hover:bg-red-600">
@@ -129,7 +129,7 @@ export default function ProductDetailPage() {
                   src={image || "/placeholder.svg"}
                   alt={`${product.productName} view ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className=""
                 />
               </button>
             ))}
