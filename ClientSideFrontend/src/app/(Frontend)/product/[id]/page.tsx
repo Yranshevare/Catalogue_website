@@ -175,7 +175,7 @@ export default function ProductDetailPage() {
               )} */}
             </div>
             {product.discount  && (
-              <p className="text-sm text-green-600 font-medium">
+              <p className="text-sm text-muted-foreground  font-medium">
                 {product.discount}
               </p>
             )}

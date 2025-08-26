@@ -10,6 +10,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  console.log(product.discount)
   const originalPrice = parseFloat(product.price || "0")
   const discount = parseFloat(String(product.discount || "0"))
   const discountedPrice = originalPrice * (1 - discount / 100)
@@ -36,11 +37,12 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </CardContent>
         <CardFooter className="p-4 pt-0">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-start flex-col space-x-2">
             <span className="text-lg font-bold">Rs {originalPrice.toFixed(2)}</span>
-            {/* {discount > 0 && (
-              <span className="text-sm text-muted-foreground line-through">${originalPrice.toFixed(2)}</span>
-            )} */}
+            {product.discount  && (
+              <span className="text-sm text-muted-foreground ">{product.discount}</span>
+            )}
+            
           </div>
         </CardFooter>
       </Card>
