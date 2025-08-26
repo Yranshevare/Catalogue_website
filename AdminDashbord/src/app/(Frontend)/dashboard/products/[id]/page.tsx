@@ -142,7 +142,7 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
                   <img
                     src={images[selectedImage] || "/placeholder.svg"}
                     alt={`${product.name} - Image ${selectedImage + 1}`}
-                    className="w-full h-full object-cover rounded-lg border"
+                    className="w-full h-full object-contain rounded-lg border"
                   />
                 </div>
 
@@ -162,7 +162,7 @@ export default function ProductDetailPage({params,}: ProductPageProps) {
                         <img
                           src={image || "/placeholder.svg"}
                           alt={`Thumbnail ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       </button>
                     ))}
