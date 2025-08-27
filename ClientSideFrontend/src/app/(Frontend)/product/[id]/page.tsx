@@ -282,9 +282,9 @@ export default function ProductDetailPage() {
               </BookingDialog>
             </div>
           </div>
-          <Separator />
+          {/* <Separator /> */}
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center space-x-3">
               <Truck className="h-5 w-5 text-primary" />
               <div>
@@ -306,7 +306,7 @@ export default function ProductDetailPage() {
                 <p className="text-xs text-muted-foreground">30-day return policy</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
