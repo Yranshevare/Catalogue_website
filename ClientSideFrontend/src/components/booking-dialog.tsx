@@ -155,7 +155,7 @@ export function BookingDialog({ product, children,Quantity }: BookingDialogProps
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total Amount:</span>
-                <span className="text-lg font-bold">${totalPrice.toFixed(2)}</span>
+                <span className="text-lg font-bold">Rs {totalPrice.toFixed(2)}</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">Payment on delivery</p>
             </div>
